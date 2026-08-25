@@ -307,7 +307,7 @@
     <div>
       <div class="dtag">&#9889; Fuel the final 114</div>
       <div class="dhead">Miles are mine. <span>Momentum is yours.</span></div>
-      <div class="dsub">Every dollar goes to the American Cancer Society. $476 across 186 miles so far, about $2.56 a mile. And yes, it makes the bike feel faster.</div>
+      <div class="dsub">Every dollar goes to the American Cancer Society. <span id="draised">$827</span> across 186 miles so far, about <span id="permile">$4.45</span> a mile. And yes, it makes the bike feel faster.</div>
     </div>
     <div class="dbtn">Donate on GoFundMe &rarr;</div>
   </a>
@@ -352,6 +352,28 @@
     setTimeout(function () { countUp(miles, 186, 0, 1700); }, 500);
     setTimeout(function () { countUp(document.getElementById('pctnum'), 62, 0, 1400); }, 700);
   });
+
+  // Live donation figures from data.json (refreshed by the GoFundMe sync action).
+  // Money only. Miles are never touched here, they stay Strava verified.
+  (function () {
+    function money(n) {
+      return '$' + Number(n).toLocaleString('en-US');
+    }
+    fetch('data.json', { cache: 'no-store' }).then(function (r) {
+      return r.ok ? r.json() : null;
+    }).then(function (d) {
+      if (!d) return;
+      var raised = Number(d.raised);
+      var miles = Number(d.miles);
+      if (!isFinite(raised) || raised <= 0) return;
+      var el = document.getElementById('draised');
+      if (el) el.textContent = money(raised);
+      if (isFinite(miles) && miles > 0) {
+        var pm = document.getElementById('permile');
+        if (pm) pm.textContent = '$' + (raised / miles).toFixed(2);
+      }
+    }).catch(function () {});
+  })();
 
   // Scroll progress bar + hero parallax on scroll
   var sbar = document.getElementById('scrollbar');
