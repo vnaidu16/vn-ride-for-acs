@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>300-Mile Challenge — August Update</title>
+<title>300-Mile Challenge: August Update</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html { scroll-behavior: smooth; }
@@ -21,17 +21,17 @@
       linear-gradient(to bottom, rgba(7,9,14,.55) 0%, transparent 22%, transparent 55%, rgba(7,9,14,.92) 88%, #07090e 100%),
       linear-gradient(100deg, transparent 42%, rgba(7,9,14,.55) 72%, rgba(7,9,14,.96) 100%),
       radial-gradient(ellipse at 28% 45%, transparent 55%, rgba(3,4,8,.5) 100%); }
-  .grade { position: absolute; inset: 0; background: linear-gradient(115deg, rgba(39,70,248,.10) 0%, transparent 45%, rgba(39,70,248,.16) 100%); mix-blend-mode: screen; }
-  .grain { position: absolute; inset: 0; opacity: .10; mix-blend-mode: overlay;
+  .grade { position: absolute; inset: 0; background: linear-gradient(115deg, rgba(39,70,248,.09) 0%, transparent 45%, rgba(39,70,248,.14) 100%); }
+  .grain { position: absolute; inset: 0; opacity: .07;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)' opacity='0.7'/%3E%3C/svg%3E"); }
 
-  /* speed lines — lambo */
+  /* speed lines, lambo style */
   .speedlines { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 2; }
-  .sline { position: absolute; height: 1.5px; width: 180px; background: linear-gradient(90deg, transparent, rgba(109,130,255,.7), transparent); opacity: 0; animation: sweep 3.4s linear infinite; }
+  .sline { position: absolute; left: 0; height: 1.5px; width: 180px; background: linear-gradient(90deg, transparent, rgba(109,130,255,.7), transparent); opacity: 0; animation: sweep 3.4s linear infinite; will-change: transform; }
   .sline:nth-child(1) { top: 22%; animation-delay: .8s; }
   .sline:nth-child(2) { top: 38%; width: 260px; animation-delay: 2s; }
   .sline:nth-child(3) { top: 64%; width: 140px; animation-delay: 3.1s; }
-  @keyframes sweep { 0% { left: -280px; opacity: 0; } 12% { opacity: .8; } 55% { opacity: .6; } 100% { left: 110%; opacity: 0; } }
+  @keyframes sweep { 0% { transform: translateX(-300px); opacity: 0; } 12% { opacity: .8; } 55% { opacity: .6; } 100% { transform: translateX(1800px); opacity: 0; } }
 
   .brand { position: absolute; top: 40px; left: 48px; right: 48px; display: flex; align-items: center; gap: 12px; z-index: 4; }
   .mark { width: 42px; height: 42px; background: linear-gradient(135deg, #2746F8, #6d82ff); border-radius: 11px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 24px rgba(39,70,248,.5); }
@@ -55,9 +55,12 @@
   .track { height: 12px; background: #12151c; border-radius: 3px; transform: skewX(-16deg); overflow: hidden; border: 1px solid #1e2430; }
   .fill { width: 0%; height: 100%; background: linear-gradient(90deg, #2746F8, #6d82ff); box-shadow: 0 0 22px rgba(77,102,255,.9); transition: width 1.6s cubic-bezier(.16,1,.3,1) .6s; position: relative; overflow: hidden; }
   .loaded .fill { width: 61.9%; }
-  .fill::after { content:''; position: absolute; top: 0; bottom: 0; width: 60px; background: linear-gradient(90deg, transparent, rgba(255,255,255,.5), transparent); animation: shine 2.8s ease-in-out infinite 2.4s; left: -80px; }
-  @keyframes shine { 0% { left: -80px; } 60%, 100% { left: 110%; } }
-  .track-labels { display: flex; justify-content: space-between; margin-top: 10px; font-size: 12.5px; color: #5b6478; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+  .fill::after { content:''; position: absolute; top: 0; bottom: 0; left: 0; width: 60px; background: linear-gradient(90deg, transparent, rgba(255,255,255,.5), transparent); animation: shine 2.8s ease-in-out infinite 2.4s; transform: translateX(-80px); will-change: transform; }
+  @keyframes shine { 0% { transform: translateX(-80px); } 60%, 100% { transform: translateX(1700px); } }
+  .tick { position: absolute; top: 0; bottom: 0; width: 2px; background: rgba(245,246,248,.35); }
+  .tick-labels { position: relative; height: 14px; margin-top: 4px; }
+  .tick-labels span { position: absolute; transform: translateX(-50%); font-size: 10px; font-weight: 800; letter-spacing: 1px; color: #3d4558; }
+  .track-labels { display: flex; justify-content: space-between; margin-top: 4px; font-size: 12.5px; color: #5b6478; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
   .track-labels .pct { color: #8fa1ff; }
 
   .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding: 24px 52px 8px; }
@@ -126,6 +129,8 @@
 
   .footer { padding: 22px 52px 32px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #5b6478; }
   .footer .sig { font-weight: 800; color: #f5f6f8; font-size: 15px; }
+  .sharebtn { background: none; border: 1px solid #2a3244; color: #8fa1ff; font-size: 11.5px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; padding: 8px 16px; border-radius: 999px; cursor: pointer; font-family: inherit; transition: border-color .2s, color .2s, transform .2s; }
+  .sharebtn:hover { border-color: #6d82ff; color: #c9d2f5; transform: translateY(-2px); }
 
   /* ---- REVEAL ANIMATIONS ---- */
   .reveal { opacity: 0; transform: translateY(26px); transition: opacity .9s cubic-bezier(.16,1,.3,1), transform .9s cubic-bezier(.16,1,.3,1); }
@@ -144,16 +149,11 @@
 
   /* ambient drifting glow orb */
   .orb { position: absolute; width: 420px; height: 420px; border-radius: 50%; pointer-events: none; z-index: 0;
-    background: radial-gradient(circle, rgba(39,70,248,.16) 0%, transparent 65%); filter: blur(10px);
-    animation: drift 16s ease-in-out infinite alternate; }
+    background: radial-gradient(circle, rgba(39,70,248,.15) 0%, transparent 62%);
+    animation: drift 16s ease-in-out infinite alternate; will-change: transform; }
   @keyframes drift { 0% { transform: translate(-60px, 0) scale(1); } 100% { transform: translate(120px, 60px) scale(1.25); } }
 
-  /* 186 glow pulse after count-up */
-  .miles.pulse { animation: glowPulse 4s ease-in-out infinite; }
-  @keyframes glowPulse {
-    0%, 100% { filter: drop-shadow(0 6px 30px rgba(39,70,248,.45)); }
-    50% { filter: drop-shadow(0 6px 44px rgba(77,102,255,.85)); }
-  }
+  /* 186 glow: static drop-shadow only (animating filters causes scroll jank) */
 
   /* integrity plaque: scale-in + one red pulse */
   .integrity.reveal { transform: translateY(26px) scale(.96); }
@@ -266,7 +266,12 @@
   </div>
 
   <div class="track-zone reveal">
-    <div class="track"><div class="fill"></div></div>
+    <div class="track">
+      <div class="fill"></div>
+      <div class="tick" style="left: 33.33%" title="100 miles: done Aug 15"></div>
+      <div class="tick" style="left: 66.67%" title="200 miles: up next"></div>
+    </div>
+    <div class="tick-labels"><span style="left: 33.33%">100</span><span style="left: 66.67%">200</span></div>
     <div class="track-labels"><span class="pct"><span id="pctnum">0</span>% complete</span><span>114 miles to go</span></div>
   </div>
   <div class="stats">
@@ -277,7 +282,7 @@
   </div>
   <div class="log reveal">
     <h2>August ride log</h2>
-    <div class="hint">Every ride is a receipt — <em>tap ↗ to open it on Strava</em></div>
+    <div class="hint">Every ride is a receipt. <em>Tap ↗ to open it on Strava</em></div>
     <div class="log-grid">
       <div>
         <a class="row" target="_blank" href="https://www.strava.com/activities/19591754894"><span>Aug 3</span><b>10.0 mi</b></a>
@@ -296,13 +301,13 @@
     </div>
   </div>
   <div class="integrity reveal">
-    <b>Accuracy promise</b><br>We only count miles accurately captured by cycle sensor, with data to prove it. Cancer doesn't cut corners &mdash; so neither do we.
+    <b>Accuracy promise</b><br>We only count miles accurately captured by cycle sensor, with data to prove it. Cancer doesn't cut corners. Neither do we.
   </div>
   <a class="donate reveal" id="donate" href="https://www.gofundme.com/f/im-cycling-300-miles-for-the-american-cancer-society-m4djn" target="_blank">
     <div>
       <div class="dtag">&#9889; Fuel the final 114</div>
       <div class="dhead">Miles are mine. <span>Momentum is yours.</span></div>
-      <div class="dsub">Every dollar goes to the American Cancer Society &mdash; and yes, it makes the bike feel faster.</div>
+      <div class="dsub">Every dollar goes to the American Cancer Society. $476 across 186 miles so far, about $2.56 a mile. And yes, it makes the bike feel faster.</div>
     </div>
     <div class="dbtn">Donate on GoFundMe &rarr;</div>
   </a>
@@ -312,13 +317,15 @@
   </div>
   <div class="footer reveal">
     <div>Ride data verified via Strava + Stages sensors &middot; Aug 1&ndash;24, 2026</div>
-    <div class="sig">&mdash; V</div>
+    <button class="sharebtn" id="sharebtn" type="button">Share this ride</button>
+    <div class="sig">V</div>
   </div>
 </div>
 
 <script>
 (function () {
   var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var desktopFine = window.matchMedia('(min-width: 1000px) and (pointer: fine)').matches;
   var ease = function (t) { return 1 - Math.pow(1 - t, 3); };
 
   function countUp(el, target, dec, dur) {
@@ -343,7 +350,6 @@
     });
     var miles = document.getElementById('miles');
     setTimeout(function () { countUp(miles, 186, 0, 1700); }, 500);
-    setTimeout(function () { miles.classList.add('pulse'); }, 2400);
     setTimeout(function () { countUp(document.getElementById('pctnum'), 62, 0, 1400); }, 700);
   });
 
@@ -357,7 +363,7 @@
       var doc = document.documentElement;
       var max = doc.scrollHeight - window.innerHeight;
       sbar.style.width = (max > 0 ? (window.scrollY / max) * 100 : 0) + '%';
-      if (!reduced && window.scrollY < 600) {
+      if (!reduced && desktopFine && window.scrollY < 600) {
         heroImgEl.style.transform = 'scale(1.05) translateY(' + (window.scrollY * 0.22) + 'px)';
       }
       ticking = false;
@@ -380,6 +386,21 @@
   }, { threshold: 0.25 });
   document.querySelectorAll('.stats .reveal, .log.reveal, .integrity.reveal, .donate.reveal, .gfm-live.reveal, .footer.reveal').forEach(function (el) { io.observe(el); });
 
+  // Share button: native sheet on mobile, copy link on desktop
+  var shareBtn = document.getElementById('sharebtn');
+  shareBtn.addEventListener('click', function () {
+    var url = 'https://vnaidu16.github.io/vn-ride-for-acs/';
+    if (navigator.share) {
+      navigator.share({ title: "V's 300-Mile Ride for ACS", text: '186 miles down, 114 to go. Follow the ride:', url: url }).catch(function(){});
+    } else if (navigator.clipboard) {
+      navigator.clipboard.writeText(url).then(function () {
+        var old = shareBtn.textContent;
+        shareBtn.textContent = 'Link copied!';
+        setTimeout(function () { shareBtn.textContent = old; }, 1600);
+      });
+    }
+  });
+
   // If GoFundMe's embed.js fails to inject the widget, collapse the section gracefully (CTA card still links out)
   setTimeout(function () {
     if (!document.querySelector('.gfm-live iframe')) {
@@ -387,8 +408,8 @@
     }
   }, 8000);
 
-  // Hero parallax
-  if (!reduced) {
+  // Hero parallax + tilt: desktop pointers only
+  if (!reduced && desktopFine) {
     var hero = document.getElementById('hero'), img = document.getElementById('heroimg');
     hero.addEventListener('mousemove', function (e) {
       var r = hero.getBoundingClientRect();
@@ -397,7 +418,7 @@
     });
     hero.addEventListener('mouseleave', function () { img.style.transform = 'scale(1.02)'; });
 
-    // Stat card tilt — lambo
+    // Stat card tilt, lambo style
     document.querySelectorAll('.stat').forEach(function (card) {
       card.addEventListener('mousemove', function (e) {
         var r = card.getBoundingClientRect();
