@@ -40,8 +40,36 @@ def fundraiser(html):
     for key, val in apollo.items():
         if key.startswith("Fundraiser:") and isinstance(val, dict) \
                 and "currentAmount" in val:
-            return val
+            return val, apollo
     die("no Fundraiser entry in Apollo state")
+
+
+def donors(apollo):
+    """Public donor list for the leaderboard.
+
+    Names are already public on the campaign page, but an anonymous
+    donation never has its name published here. Amount and timestamp
+    drive the 'top' and 'first' sorts.
+    """
+    out = []
+    for key, val in apollo.items():
+        if not key.startswith("Donation:") or not isinstance(val, dict):
+            continue
+        amt = val.get("amount")
+        if isinstance(amt, dict):
+            amt = amt.get("amount")
+        created = val.get("createdAt")
+        if not isinstance(amt, (int, float)) or isinstance(amt, bool):
+            continue
+        if not isinstance(created, str) or not created:
+            continue
+        anon = bool(val.get("isAnonymous"))
+        name = val.get("name")
+        if anon or not isinstance(name, str) or not name.strip():
+            name = "Anonymous"
+        out.append({"n": name.strip(), "a": amt, "t": created})
+    out.sort(key=lambda d: d["t"])
+    return out
 
 
 def amount(node, field):
@@ -59,35 +87,42 @@ def main():
     except Exception as e:
         die("cannot read %s: %s" % (DATA, e))
 
-    node = fundraiser(fetch())
+    node, apollo = fundraiser(fetch())
     raised = amount(node, "currentAmount")
     goal = amount(node, "goalAmount")
-    donors = node.get("donationCount")
-    if not isinstance(donors, int) or isinstance(donors, bool):
-        die("donationCount is not an integer: %r" % donors)
+    donor_count = node.get("donationCount")
+    if not isinstance(donor_count, int) or isinstance(donor_count, bool):
+        die("donationCount is not an integer: %r" % donor_count)
 
     prev = float(old.get("raised") or 0)
     if raised <= 0:
         die("raised is not positive: %r" % raised)
     if goal <= 0:
         die("goal is not positive: %r" % goal)
-    if donors < 0:
-        die("donors is negative: %r" % donors)
+    if donor_count < 0:
+        die("donor_count is negative: %r" % donor_count)
     # Refunds happen, but a collapse or an absurd spike means a bad parse.
     if prev > 0 and not (prev * 0.5 <= raised <= prev * 10 + 10000):
         die("raised %r is implausible next to previous %r" % (raised, prev))
 
     new = dict(old)
     new["raised"] = raised
-    new["donors"] = donors
+    new["donors"] = donor_count
     new["goal"] = goal
     new["updated"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     # miles stays exactly as it was, never derived from GoFundMe.
 
+    roster = donors(apollo)
+    # A parse that loses the whole roster is a bad parse, not an empty one.
+    if not roster and old.get("donors_list"):
+        die("donor roster came back empty but was previously populated")
+    if roster:
+        new["donors_list"] = roster
+
     with open(DATA, "w") as f:
         json.dump(new, f, indent=2)
         f.write("\n")
-    print("raised=%s donors=%s goal=%s" % (raised, donors, goal))
+    print("raised=%s donor_count=%s goal=%s" % (raised, donor_count, goal))
 
 
 if __name__ == "__main__":

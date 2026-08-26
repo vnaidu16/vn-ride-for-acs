@@ -4,6 +4,24 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>300-Mile Challenge: August Update</title>
+<meta name="description" content="196 of 300 miles ridden for the American Cancer Society. Only sensor-verified miles count. Follow the ride and fuel the final 104.">
+<meta name="theme-color" content="#07090e">
+<link rel="canonical" href="https://vnaidu16.github.io/vn-ride-for-acs/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="V's 300-Mile Ride for ACS">
+<meta property="og:url" content="https://vnaidu16.github.io/vn-ride-for-acs/">
+<meta property="og:title" content="196 of 300 miles. Riding for a world with less cancer.">
+<meta property="og:description" content="Every dollar goes to the American Cancer Society. Only sensor-verified miles count. Fuel the final 104.">
+<meta property="og:image" content="https://vnaidu16.github.io/vn-ride-for-acs/og.jpg?v=196">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="V riding at night. 196 of 300 miles, 65 percent complete.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="196 of 300 miles. Riding for a world with less cancer.">
+<meta name="twitter:description" content="Every dollar goes to the American Cancer Society. Only sensor-verified miles count. Fuel the final 104.">
+<meta name="twitter:image" content="https://vnaidu16.github.io/vn-ride-for-acs/og.jpg?v=196">
+<meta name="twitter:image:alt" content="V riding at night. 196 of 300 miles, 65 percent complete.">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html { scroll-behavior: smooth; }
@@ -132,6 +150,24 @@
   .sharebtn { background: none; border: 1px solid #2a3244; color: #8fa1ff; font-size: 11.5px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; padding: 8px 16px; border-radius: 999px; cursor: pointer; font-family: inherit; transition: border-color .2s, color .2s, transform .2s; }
   .sharebtn:hover { border-color: #6d82ff; color: #c9d2f5; transform: translateY(-2px); }
 
+
+  /* ---- DONOR LEADERBOARD ---- */
+  .board { margin: 20px 52px 0; background: #0d1017; border: 1px solid #1a2030; border-radius: 16px; padding: 20px 26px; position: relative; z-index: 1; display: none; }
+  .board.on { display: block; }
+  .board-top { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-bottom: 12px; }
+  .board h2 { font-size: 11px; letter-spacing: 8px; text-transform: uppercase; color: #8fa1ff; font-weight: 800; }
+  .bseg { display: flex; gap: 6px; }
+  .bseg button { font-family: inherit; font-size: 10.5px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 800; color: #8a93ab; background: #0a0d14; border: 1px solid #1a2030; border-radius: 999px; padding: 7px 13px; cursor: pointer; transition: color .25s, background-color .25s, border-color .25s; }
+  .bseg button:hover { color: #d7dcea; border-color: #2b3550; }
+  .bseg button[aria-selected="true"] { color: #fff; background: #2746F8; border-color: #2746F8; }
+  .brow { display: flex; align-items: center; gap: 14px; padding: 9px 0; border-top: 1px solid #151b28; }
+  .brow:first-child { border-top: 0; }
+  .brank { font-size: 12px; font-weight: 800; color: #6d82ff; width: 20px; flex: none; font-variant-numeric: tabular-nums; }
+  .bname { flex: 1; font-size: 14px; color: #d7dcea; font-weight: 700; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .bwhen { font-size: 11px; color: #6b7489; flex: none; }
+  /* Static blur only. Animating filter causes scroll jank. */
+  .bamt { font-size: 14px; font-weight: 800; color: #00e57c; filter: blur(5px); user-select: none; flex: none; font-variant-numeric: tabular-nums; }
+
   /* ---- REVEAL ANIMATIONS ---- */
   .reveal { opacity: 0; transform: translateY(26px); transition: opacity .9s cubic-bezier(.16,1,.3,1), transform .9s cubic-bezier(.16,1,.3,1); }
   .reveal.in { opacity: 1; transform: translateY(0); }
@@ -187,6 +223,8 @@
     .log .hint { font-size: 12px; }
     .log-grid { column-gap: 90px; }
     .row { font-size: 15px; padding: 9px 12px; }
+    .board { margin: 28px 72px 0; padding: 26px 36px; border-radius: 20px; }
+    .board h2 { font-size: 12.5px; }
     .integrity { margin: 28px 72px 0; font-size: 15px; padding: 20px 26px; border-radius: 16px; }
     .donate { margin: 28px 72px 0; padding: 30px 38px; border-radius: 20px; }
     .donate .dtag { font-size: 12px; }
@@ -221,6 +259,9 @@
     .stat::before { display: none; } .stat::after { display: none; }
     .log { margin: 16px 22px 0; padding: 16px 16px; }
     .log-grid { grid-template-columns: 1fr; column-gap: 0; }
+    .board { margin: 16px 22px 0; padding: 16px 18px; }
+    .board h2 { letter-spacing: 5px; }
+    .bwhen { display: none; }
     .integrity { margin: 16px 22px 0; font-size: 12.5px; padding: 13px 16px; }
     .donate { margin: 16px 22px 0; flex-direction: column; align-items: flex-start; gap: 14px; padding: 18px 18px; }
     .donate .dhead { font-size: 18px; }
@@ -312,6 +353,16 @@
     </div>
     <div class="dbtn">Donate on GoFundMe &rarr;</div>
   </a>
+  <div class="board" id="board">
+    <div class="board-top">
+      <h2>Donor leaderboard</h2>
+      <div class="bseg">
+        <button type="button" data-sort="top" aria-selected="true">Top donors</button>
+        <button type="button" data-sort="first" aria-selected="false">First donors</button>
+      </div>
+    </div>
+    <div id="brows"></div>
+  </div>
   <div class="gfm-live reveal">
     <div class="gl-label"><span class="dot"></span> Live from GoFundMe</div>
     <div class="gfm-embed" data-url="https://www.gofundme.com/f/im-cycling-300-miles-for-the-american-cancer-society-m4djn/widget/medium"></div>
@@ -360,6 +411,53 @@
     function money(n) {
       return '$' + Number(n).toLocaleString('en-US');
     }
+    // Names come from GoFundMe, so every field is written with textContent.
+    function board(roster) {
+      var box = document.getElementById('board');
+      var rows = document.getElementById('brows');
+      if (!box || !rows) return;
+      var mode = 'top';
+      var btns = box.querySelectorAll('.bseg button');
+      function when(t) {
+        var dt = new Date(t);
+        return isNaN(dt.getTime()) ? '' : dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      }
+      function cell(cls, text) {
+        var el = document.createElement('div');
+        el.className = cls;
+        el.textContent = text;
+        return el;
+      }
+      function draw() {
+        var list = roster.slice();
+        if (mode === 'top') {
+          list.sort(function (a, b) { return b.a - a.a; });
+        } else {
+          list.sort(function (a, b) { return a.t < b.t ? -1 : a.t > b.t ? 1 : 0; });
+        }
+        rows.textContent = '';
+        list.forEach(function (x, i) {
+          var row = document.createElement('div');
+          row.className = 'brow';
+          row.appendChild(cell('brank', String(i + 1)));
+          row.appendChild(cell('bname', x.n));
+          row.appendChild(cell('bwhen', when(x.t)));
+          row.appendChild(cell('bamt', '$' + Number(x.a).toLocaleString('en-US')));
+          rows.appendChild(row);
+        });
+      }
+      [].forEach.call(btns, function (b) {
+        b.addEventListener('click', function () {
+          mode = b.getAttribute('data-sort');
+          [].forEach.call(btns, function (o) {
+            o.setAttribute('aria-selected', o === b ? 'true' : 'false');
+          });
+          draw();
+        });
+      });
+      draw();
+      box.classList.add('on');
+    }
     fetch('data.json', { cache: 'no-store' }).then(function (r) {
       return r.ok ? r.json() : null;
     }).then(function (d) {
@@ -372,6 +470,9 @@
       if (isFinite(miles) && miles > 0) {
         var pm = document.getElementById('permile');
         if (pm) pm.textContent = '$' + (raised / miles).toFixed(2);
+      }
+      if (Array.isArray(d.donors_list) && d.donors_list.length) {
+        board(d.donors_list);
       }
     }).catch(function () {});
   })();
