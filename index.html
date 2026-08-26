@@ -173,6 +173,8 @@
   .sharebtn:hover { border-color: #6d82ff; color: #c9d2f5; transform: translateY(-2px); }
 
 
+  .ico { width: 1em; height: 1em; vertical-align: -0.13em; margin-right: 5px; fill: currentColor; }
+
   /* ---- DONOR LEADERBOARD ---- */
   .board { margin-top: 15px; padding-top: 13px; border-top: 1px solid #1a2030; display: none; }
   .board.on { display: block; }
@@ -321,7 +323,7 @@
         </svg>
       </div>
       <div class="brand-text">300-Mile Bike Challenge &middot; Benefiting the American Cancer Society</div>
-      <a class="topdonate" href="#donate">&#9889; Donate now</a>
+      <a class="topdonate" href="#donate"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M13.2 2 4.6 13.6h5.7l-.9 8.4 8.6-11.6h-5.7l.9-8.4z"/></svg> Donate now</a>
     </div>
     <div class="flare"></div>
     <div class="hero-content">
@@ -376,7 +378,7 @@
     <div class="gfm-embed" data-url="https://www.gofundme.com/f/im-cycling-300-miles-for-the-american-cancer-society-m4djn/widget/medium"></div>
   </div>
   <div class="donate reveal">
-    <div class="dtag">&#9889; Fuel the final 104</div>
+    <div class="dtag"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M13.2 2 4.6 13.6h5.7l-.9 8.4 8.6-11.6h-5.7l.9-8.4z"/></svg> Fuel the final 104</div>
     <div class="dhead">Miles are mine. <span>Momentum is yours.</span></div>
     <div class="dsub">Every dollar goes to the American Cancer Society. <span id="draised">$827</span> across 196 miles so far, about <span id="permile">$4.22</span> a mile. And yes, it makes the bike feel faster.</div>
     <a class="dfallback" id="dfallback" href="https://www.gofundme.com/f/im-cycling-300-miles-for-the-american-cancer-society-m4djn" target="_blank" rel="noopener">Donate on GoFundMe &rarr;</a>
@@ -638,6 +640,8 @@
 .lf.active { border-color: #6d82ff; color: #fff; background: rgba(39,70,248,.2); }
 .log-row { display: grid; grid-template-columns: 78px 1fr 90px 80px 110px 20px; gap: 10px; align-items: center; padding: 9px 10px; border-bottom: 1px solid #141926; font-size: 13px; color: #9aa3b8; text-decoration: none; border-radius: 8px; transition: background .15s; }
 .log-row:hover { background: rgba(39,70,248,.12); }
+.log-row.nolink { cursor: default; }
+.log-row.nolink:hover { background: transparent; }
 .log-row .nm { color: #e7eaf2; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .log-row .num { font-variant-numeric: tabular-nums; white-space: nowrap; }
 .log-row .ext { color: #fc5200; font-weight: 900; font-size: 12px; }
@@ -678,7 +682,7 @@
 <div id="hq">
  <div class="hq-wrap">
   <div class="hq-head">
-    <div class="kick">&#9889; Full training telemetry</div>
+    <div class="kick"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M13.2 2 4.6 13.6h5.7l-.9 8.4 8.6-11.6h-5.7l.9-8.4z"/></svg> Full training telemetry</div>
     <h2>The Engine Room</h2>
     <div class="sub">Six months of swim, bike, run and everything underneath it. Every entry links to Strava. Road to IRONMAN 70.3 Santa Cruz, Sep 13, 2026.</div>
   </div>
@@ -712,7 +716,7 @@
       <tr><td><b>Aug 24</b></td><td>Build to 1800yd. Sat test: 1500yd continuous under 45 min</td><td>40 mi + brick</td><td>10 mi easy</td></tr>
       <tr><td><b>Aug 31</b></td><td>2x open water in wetsuit, 2000yd continuous</td><td>45-50 mi + brick</td><td>11 mi easy</td></tr>
       <tr><td><b>Sep 7</b></td><td>2 sharpeners + 1 ocean swim</td><td>90 min easy</td><td>4 mi easy</td></tr>
-      <tr><td><b>Sep 13</b></td><td colspan="3"><b>Race day.</b> Swim to beat 1:10. Bike at conversation pace. Run at 11-12/mi off the bike. Goal one: the cutoff. Goal two: the finish line.</td></tr>
+      <tr><td><b>Sep 13</b></td><td colspan="3"><b>Race day.</b> Swim to beat 1:10. Bike at conversation pace. Run at 11-12/mi off the bike. Goal one: the cutoff. Goal two: the finish line (ER or PR ;)</td></tr>
       </table>
     </div>
   </div>
@@ -778,7 +782,9 @@
         '<span class="num">'+(a.dist||'')+'</span>'+
         '<span class="num tm">'+a.time+'</span>'+
         '<span class="num pc">'+(a.pace||'')+'</span>'+
-        '<span class="ext">\u2197</span>';
+        '<span class="ext">'+(a.id ? '\u2197' : '')+'</span>';
+      // No Strava id means it was logged by hand, so no link and no arrow.
+      if (!a.id) return '<div class="log-row nolink" title="Logged manually, not on Strava">'+inner+'</div>';
       return '<a class="log-row" target="_blank" href="https://www.strava.com/activities/'+a.id+'">'+inner+'</a>';
     }).join('');
     document.getElementById('logrows').innerHTML = rows;
