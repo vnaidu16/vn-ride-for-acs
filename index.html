@@ -138,19 +138,34 @@
   /* Only surfaces if GoFundMe's widget fails to load, so donors are never stranded. */
   .dfallback { display: none; margin-top: 14px; background: #00b964; color: #04140c; font-weight: 900; font-size: 14px; padding: 13px 22px; border-radius: 999px; text-decoration: none; text-align: center; }
   .dfallback.on { display: block; }
-  .gfm-live { margin: 14px 52px 0; border-radius: 16px; overflow: hidden; border: 1px solid #1a2030; background: radial-gradient(130% 150% at 50% 0%, #131a2b 0%, #0d1017 58%, #090c12 100%); position: relative; z-index: 1; }
-  .gfm-live .gl-label { font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase; font-weight: 800; color: #00e57c; padding: 12px 20px 0; display: flex; align-items: center; gap: 8px; }
+  .gfm-live { margin: 14px 52px 0; border-radius: 16px; overflow: hidden; border: 1px solid #1a2030; background: radial-gradient(120% 160% at 50% 0%, #141b2d 0%, #0d1017 60%, #090c12 100%); position: relative; z-index: 1; }
+  .gfm-live .gl-label { font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase; font-weight: 800; color: #00e57c; padding: 14px 20px 0; display: flex; align-items: center; justify-content: center; gap: 8px; }
   .gfm-live .dot { width: 7px; height: 7px; border-radius: 50%; background: #00e57c; animation: blink 1.6s ease-in-out infinite; }
   @keyframes blink { 0%, 100% { opacity: 1; box-shadow: 0 0 8px rgba(0,229,124,.9); } 50% { opacity: .35; box-shadow: none; } }
-  .gfm-live .gfm-embed { margin-top: 8px; padding: 10px 14px 16px; position: relative; }
+  .gfm-live .gfm-embed { margin-top: 8px; padding: 30px 14px 32px; position: relative; }
   /* The widget is a cross-origin iframe, so its interior cannot be themed.
-     Instead it gets seated on a dark plinth that fades the white edge in. */
-  .gfm-live .gfm-embed::before { content: ''; position: absolute; left: 6px; right: 6px; top: 2px; bottom: 8px; border-radius: 18px;
-    background: linear-gradient(180deg, rgba(39,70,248,.22) 0%, rgba(39,70,248,.06) 42%, rgba(0,0,0,0) 72%); pointer-events: none; }
+     Instead its edges are clipped and it sits on two feathered boxes: a white
+     one that continues the widget's own card, and a wider blue one that falls
+     off into the page. The white stops reading as a pasted-in external box. */
+  .gfm-live .gfm-embed::before, .gfm-live .gfm-embed::after {
+    content: ''; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+    z-index: 0; pointer-events: none; -webkit-mask-composite: source-in; mask-composite: intersect; }
+  .gfm-live .gfm-embed::before {
+    width: min(100%, 880px); height: calc(100% + 6px); border-radius: 30px;
+    background: linear-gradient(180deg, rgba(120,143,255,.42), rgba(70,100,250,.30) 55%, rgba(39,70,248,.20));
+    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 90px, #000 calc(100% - 90px), transparent 100%), linear-gradient(to bottom, transparent 0, #000 54px, #000 calc(100% - 54px), transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0, #000 90px, #000 calc(100% - 90px), transparent 100%), linear-gradient(to bottom, transparent 0, #000 54px, #000 calc(100% - 54px), transparent 100%); }
+  .gfm-live .gfm-embed::after {
+    width: 626px; max-width: calc(100% - 10px); height: calc(100% - 26px); border-radius: 20px;
+    background: linear-gradient(180deg, #ffffff, #f2f4ff 70%, #e7ebff);
+    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 42px, #000 calc(100% - 42px), transparent 100%), linear-gradient(to bottom, transparent 0, #000 30px, #000 calc(100% - 30px), transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0, #000 42px, #000 calc(100% - 42px), transparent 100%), linear-gradient(to bottom, transparent 0, #000 30px, #000 calc(100% - 30px), transparent 100%); }
   /* Capped to the widget's own card width so the iframe's white background
      reads as a card on the page instead of a full-width white band. */
-  .gfm-live iframe { position: relative; z-index: 1; width: 100% !important; max-width: 528px; margin: 0 auto; border: 0 !important; display: block; border-radius: 14px;
-    box-shadow: 0 0 0 1px rgba(143,161,255,.20), 0 18px 48px rgba(0,0,0,.6), 0 2px 0 rgba(255,255,255,.05); }
+  .gfm-live iframe { position: relative; z-index: 1; width: 100% !important; max-width: 528px; margin: 0 auto; border: 0 !important; display: block;
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 18px, #000 calc(100% - 18px), transparent 100%), linear-gradient(to right, transparent 0, #000 20px, #000 calc(100% - 20px), transparent 100%);
+    mask-image: linear-gradient(to bottom, transparent 0, #000 18px, #000 calc(100% - 18px), transparent 100%), linear-gradient(to right, transparent 0, #000 20px, #000 calc(100% - 20px), transparent 100%);
+    -webkit-mask-composite: source-in; mask-composite: intersect; }
 
   .footer { padding: 22px 52px 32px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #5b6478; }
   .footer .sig { font-weight: 800; color: #f5f6f8; font-size: 15px; }
@@ -241,7 +256,9 @@
     .donate .dsub { font-size: 14.5px; }
     .donate .dbtn { font-size: 16px; padding: 17px 28px; }
     .gfm-live { margin: 18px 72px 0; border-radius: 20px; }
-    .gfm-live iframe { height: 230px; }
+    .gfm-live iframe { height: 198px;
+      -webkit-mask-image: linear-gradient(to right, transparent 0, transparent 27px, #000 47px, #000 calc(100% - 47px), transparent calc(100% - 27px), transparent 100%), linear-gradient(to bottom, transparent 0, #000 22px, #000 calc(100% - 22px), transparent 100%);
+      mask-image: linear-gradient(to right, transparent 0, transparent 27px, #000 47px, #000 calc(100% - 47px), transparent calc(100% - 27px), transparent 100%), linear-gradient(to bottom, transparent 0, #000 22px, #000 calc(100% - 22px), transparent 100%); }
     .footer { padding: 30px 72px 42px; font-size: 13px; }
     .footer .sig { font-size: 17px; }
   }
