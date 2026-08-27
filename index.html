@@ -68,6 +68,14 @@
     background: linear-gradient(180deg, #ffffff 25%, #8fa1ff 90%); -webkit-background-clip: text; background-clip: text; color: transparent;
     filter: drop-shadow(0 6px 30px rgba(39,70,248,.45)); position: relative; display: inline-block; font-variant-numeric: tabular-nums; }
   .goal { font-size: 17px; color: #8a93ab; font-weight: 700; letter-spacing: 4px; margin-top: 6px; }
+  /* The ACS challenge closes at the end of August. This is that clock, not race day. */
+  .deadline { display: none; margin-top: 16px; align-items: center; justify-content: flex-end; gap: 10px;
+    padding: 10px 16px; border-radius: 999px; background: rgba(255,90,112,.14); border: 1px solid rgba(255,90,112,.42); }
+  .deadline.on { display: inline-flex; }
+  .deadline .ddot { width: 7px; height: 7px; border-radius: 50%; background: #ff5a70; animation: blink 1.6s ease-in-out infinite; flex: none; }
+  .deadline b { font-size: 12px; font-weight: 900; letter-spacing: 1.9px; text-transform: uppercase; color: #ff8e9e; white-space: nowrap; }
+  .deadline i { font-style: normal; font-size: 12px; font-weight: 700; color: #d7dcea; white-space: nowrap; }
+  .deadline.final { background: rgba(255,90,112,.22); border-color: rgba(255,90,112,.7); }
 
   /* ---- BODY ---- */
   .track-zone { padding: 30px 52px 6px; position: relative; }
@@ -275,6 +283,9 @@
     h1 { font-size: 42px; }
     .miles { font-size: 220px; letter-spacing: -11px; }
     .goal { font-size: 21px; letter-spacing: 5px; }
+    .deadline { margin-top: 20px; padding: 12px 20px; gap: 12px; }
+    .deadline b { font-size: 14px; }
+    .deadline i { font-size: 14px; }
     .flare { width: 560px; bottom: 160px; }
     .track-zone { padding: 42px 72px 8px; }
     .track { height: 14px; }
@@ -315,6 +326,9 @@
     h1 { font-size: 21px; }
     .miles { font-size: 86px; letter-spacing: -4px; }
     .goal { font-size: 13px; letter-spacing: 3px; }
+    .deadline { margin-top: 11px; padding: 7px 12px; gap: 7px; }
+    .deadline b { font-size: 10px; letter-spacing: 1.2px; }
+    .deadline i { font-size: 10px; }
     .flare { width: 240px; bottom: 92px; }
     .track-zone { padding: 22px 22px 4px; }
     .track-labels { font-size: 10.5px; }
@@ -367,6 +381,7 @@
       <h1 class="reveal">Riding for a world<br>with <b>less cancer.</b></h1>
       <div class="miles reveal" id="miles">0</div>
       <div class="goal reveal">OF 300 MILES</div>
+      <div class="deadline reveal" id="deadline"></div>
     </div>
   </div>
 
@@ -482,16 +497,33 @@
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
   })();
 
+  // Single source for the mileage. Update this one number when a ride is
+  // logged and the hero, the deadline badge and miles remaining all follow.
+  var MILES_DONE = 206, MILES_GOAL = 300;
+
   // Days left to finish the 300 for ACS. The challenge closes at the end of
   // August. Sep 13 is the race, which is a separate date, do not confuse them.
+  function daysLeft() {
+    return Math.ceil((new Date('2026-09-01T00:00:00') - new Date()) / 86400000);
+  }
   (function () {
+    var days = daysLeft(), togo = MILES_GOAL - MILES_DONE;
     var el = document.getElementById('daysleft');
-    if (!el) return;
-    var days = Math.ceil((new Date('2026-09-01T00:00:00') - new Date()) / 86400000);
-    if (days > 0) {
-      el.innerHTML = ' &middot; ' + days + (days === 1 ? ' day left' : ' days left');
-    } else {
-      el.innerHTML = ' &middot; final day';
+    if (el) {
+      el.innerHTML = days > 1 ? ' &middot; ' + days + ' days left'
+        : days === 1 ? ' &middot; final day'
+        : '';
+    }
+    var d = document.getElementById('deadline');
+    if (!d || togo <= 0) return;
+    if (days > 1) {
+      d.innerHTML = '<span class="ddot"></span><b>' + days + ' days left</b>' +
+        '<i>' + togo + ' miles to ride by Aug 31</i>';
+      d.classList.add('on');
+    } else if (days === 1) {
+      d.innerHTML = '<span class="ddot"></span><b>Final day</b>' +
+        '<i>' + togo + ' miles to go</i>';
+      d.classList.add('on', 'final');
     }
   })();
 
@@ -504,7 +536,7 @@
       setTimeout(function () { el.classList.add('in'); }, 150 + i * 160);
     });
     var miles = document.getElementById('miles');
-    setTimeout(function () { countUp(miles, 206, 0, 1700); }, 500);
+    setTimeout(function () { countUp(miles, MILES_DONE, 0, 1700); }, 500);
     setTimeout(function () { countUp(document.getElementById('pctnum'), 69, 0, 1400); }, 700);
   }
   if (document.readyState === 'loading') {
