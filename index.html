@@ -482,12 +482,17 @@
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
   })();
 
-  // Days left to finish the 300 for ACS. Computed so it never goes stale.
+  // Days left to finish the 300 for ACS. The challenge closes at the end of
+  // August. Sep 13 is the race, which is a separate date, do not confuse them.
   (function () {
     var el = document.getElementById('daysleft');
     if (!el) return;
-    var days = Math.ceil((new Date('2026-09-13T00:00:00') - new Date()) / 86400000);
-    if (days > 0) el.innerHTML = ' &middot; ' + days + (days === 1 ? ' day left' : ' days left');
+    var days = Math.ceil((new Date('2026-09-01T00:00:00') - new Date()) / 86400000);
+    if (days > 0) {
+      el.innerHTML = ' &middot; ' + days + (days === 1 ? ' day left' : ' days left');
+    } else {
+      el.innerHTML = ' &middot; final day';
+    }
   })();
 
   function heroStart() {
@@ -1166,8 +1171,8 @@
         '<span class="tbv">'+Math.round(pct)+'% ready</span></div>';
     }).join('');
     box.innerHTML = '<h2>The training behind the miles</h2>'+
-      '<div class="sub">Longest effort so far against each leg of the IRONMAN 70.3 on Sep 13'+
-      (days > 0 ? ', now ' + days + ' days out' : '') + '. Every ACS mile is ridden on this base.</div>' + rows;
+      '<div class="sub">Longest effort so far against each leg of the IRONMAN 70.3. Race day is Sep 13'+
+      (days > 0 ? ', ' + days + ' days out' : '') + '. The 300 for ACS closes sooner, at the end of August.</div>' + rows;
     box.classList.add('on');
   })();
 
