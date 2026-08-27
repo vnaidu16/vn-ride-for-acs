@@ -6,7 +6,7 @@
 <title>300-Mile Challenge: August Update</title>
 <meta name="description" content="206 of 300 miles ridden for the American Cancer Society. Only sensor-verified miles count. Follow the ride and fuel the final 94.">
 <meta name="theme-color" content="#07090e">
-<link rel="preload" as="image" href="hero.jpg" imagesrcset="hero-800.jpg 800w, hero-1120.jpg 1120w, hero.jpg 1500w" imagesizes="100vw" fetchpriority="high">
+<link rel="preload" as="image" type="image/avif" imagesrcset="hero-800.avif 800w, hero-1120.avif 1120w, hero.avif 1500w" imagesizes="100vw" fetchpriority="high">
 <link rel="canonical" href="https://vnaidu16.github.io/vn-ride-for-acs/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="V's 300-Mile Ride for ACS">
@@ -52,7 +52,7 @@
   .sline:nth-child(3) { top: 64%; width: 140px; animation-delay: 3.1s; }
   @keyframes sweep { 0% { transform: translateX(-300px); opacity: 0; } 12% { opacity: .8; } 55% { opacity: .6; } 100% { transform: translateX(1800px); opacity: 0; } }
 
-  .brand { position: absolute; top: 40px; left: 48px; right: 48px; display: flex; align-items: center; gap: 12px; z-index: 4; }
+  .brand { position: absolute; top: 40px; left: 48px; right: 48px; display: flex; align-items: center; gap: 12px; z-index: 4; padding-left: var(--burger-w, 132px); }
   .mark { width: 42px; height: 42px; background: linear-gradient(135deg, #2746F8, #6d82ff); border-radius: 11px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 24px rgba(39,70,248,.5); }
   .brand-text { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; font-weight: 700; color: rgba(245,246,248,.85); text-shadow: 0 1px 8px rgba(0,0,0,.8); }
   .topdonate { margin-left: auto; flex-shrink: 0; background: rgba(0,185,100,.92); color: #04140c; font-size: 11.5px; font-weight: 900; letter-spacing: .8px; text-transform: uppercase; text-decoration: none; padding: 9px 16px; border-radius: 999px; box-shadow: 0 4px 18px rgba(0,185,100,.5); transition: transform .2s cubic-bezier(.16,1,.3,1), box-shadow .2s, background .2s; }
@@ -78,7 +78,12 @@
   @keyframes shine { 0% { transform: translateX(-80px); } 60%, 100% { transform: translateX(1700px); } }
   .tick { position: absolute; top: 0; bottom: 0; width: 2px; background: rgba(245,246,248,.35); }
   .tick-labels { position: relative; height: 14px; margin-top: 4px; }
-  .tick-labels span { position: absolute; transform: translateX(-50%); font-size: 10px; font-weight: 800; letter-spacing: 1px; color: #3d4558; }
+  .tick-labels span { position: absolute; transform: translateX(-50%); font-size: 10px; font-weight: 800; letter-spacing: 1px; color: #3d4558; white-space: nowrap; }
+  .tick-labels span.done { color: #8fa1ff; }
+  .tick-labels span.done::after { content: ' \2713'; color: #00e57c; font-weight: 900; }
+  .tick.done { background: #8fa1ff; box-shadow: 0 0 10px rgba(143,161,255,.9); }
+  .tick.fresh { animation: tickPop 2.2s cubic-bezier(.16,1,.3,1) .9s 2; }
+  @keyframes tickPop { 0%,100% { transform: scaleY(1); } 18% { transform: scaleY(2.1); } }
   .track-labels { display: flex; justify-content: space-between; margin-top: 4px; font-size: 12.5px; color: #5b6478; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
   .track-labels .pct { color: #8fa1ff; }
 
@@ -140,6 +145,8 @@
   .dfallback { display: none; margin-top: 14px; background: #00b964; color: #04140c; font-weight: 900; font-size: 14px; padding: 13px 22px; border-radius: 999px; text-decoration: none; text-align: center; }
   .dfallback.on { display: block; }
   .gfm-live { margin: 14px 52px 0; border-radius: 16px; overflow: hidden; border: 1px solid #1a2030; background: radial-gradient(120% 160% at 50% 0%, #141b2d 0%, #0d1017 60%, #090c12 100%); position: relative; z-index: 1; }
+  .stale { display: none; margin-top: 6px; font-size: 11px; color: #c9a227; font-weight: 700; }
+  .stale.on { display: block; }
   .gfm-live .gl-label { font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase; font-weight: 800; color: #00e57c; padding: 14px 20px 0; display: flex; align-items: center; justify-content: center; gap: 8px; }
   .gfm-live .dot { width: 7px; height: 7px; border-radius: 50%; background: #00e57c; animation: blink 1.6s ease-in-out infinite; }
   @keyframes blink { 0%, 100% { opacity: 1; box-shadow: 0 0 8px rgba(0,229,124,.9); } 50% { opacity: .35; box-shadow: none; } }
@@ -175,6 +182,36 @@
 
 
   .ico { width: 1em; height: 1em; vertical-align: -0.13em; margin-right: 5px; fill: currentColor; }
+
+  /* Finish line state. Dormant: nothing renders unless it is switched on,
+     so it can sit in the page safely until race day. */
+  .finish { display: none; margin: 0 0 -6px; padding: 26px 52px 22px; text-align: center; position: relative; z-index: 2;
+    background: linear-gradient(180deg, rgba(0,229,124,.14), rgba(0,229,124,0)); border-bottom: 1px solid rgba(0,229,124,.22); }
+  .finish.on { display: block; animation: hqin .6s cubic-bezier(.16,1,.3,1); }
+  .finish .fk { font-size: 10.5px; letter-spacing: 4px; text-transform: uppercase; font-weight: 900; color: #00e57c; }
+  .finish h2 { font-size: 30px; font-weight: 900; color: #f5f6f8; line-height: 1.15; margin: 8px 0 6px; letter-spacing: -.5px; }
+  .finish h2 span { background: linear-gradient(90deg,#00e57c,#8fa1ff); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .finish p { font-size: 13.5px; color: #9aa3b8; max-width: 620px; margin: 0 auto; line-height: 1.6; }
+  .finish .fstats { display: flex; justify-content: center; flex-wrap: wrap; gap: 26px; margin-top: 16px; }
+  .finish .fstat b { display: block; font-size: 22px; font-weight: 900; color: #f5f6f8; font-variant-numeric: tabular-nums; }
+  .finish .fstat span { font-size: 10px; letter-spacing: 1.6px; text-transform: uppercase; color: #5b6478; font-weight: 800; }
+  @media (min-width: 1000px) { .finish { padding: 34px 72px 28px; } .finish h2 { font-size: 40px; } }
+  @media (max-width: 640px) { .finish { padding: 20px 22px 18px; } .finish h2 { font-size: 23px; } .finish .fstats { gap: 16px; } }
+
+  /* Sits below the donate ask on purpose. The fundraiser leads, the
+     training is the evidence that the miles will actually get ridden. */
+  .trainbar { display: none; margin: 16px 52px 0; background: #0d1017; border: 1px solid #1a2030; border-radius: 16px; padding: 18px 26px; position: relative; z-index: 1; }
+  .trainbar.on { display: block; }
+  .trainbar h2 { font-size: 11px; letter-spacing: 6px; text-transform: uppercase; color: #8fa1ff; font-weight: 800; margin-bottom: 3px; }
+  .trainbar .sub { font-size: 12px; color: #6b7489; margin-bottom: 14px; }
+  .tbrow { display: grid; grid-template-columns: 52px 1fr 92px; align-items: center; gap: 12px; margin-bottom: 9px; font-size: 12px; }
+  .tbrow .tbl { font-weight: 800; color: #9aa3b8; letter-spacing: .5px; }
+  .tbrow .tbv { text-align: right; color: #c3cbdc; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .tbtrack { height: 9px; border-radius: 5px; background: #10141f; overflow: hidden; box-shadow: inset 0 0 0 1px #171d2b; }
+  .tbfill { height: 100%; border-radius: 5px; transform-origin: left center; }
+  .in .tbfill { animation: zoneGrow .9s cubic-bezier(.16,1,.3,1) both; }
+  @media (min-width: 1000px) { .trainbar { margin: 20px 72px 0; padding: 22px 36px; border-radius: 20px; } }
+  @media (max-width: 640px) { .trainbar { margin: 14px 22px 0; padding: 15px 18px; } .trainbar h2 { letter-spacing: 4px; } .tbrow { grid-template-columns: 44px 1fr 78px; font-size: 11px; } }
 
   /* ---- DONOR LEADERBOARD ---- */
   .board { margin-top: 15px; padding-top: 13px; border-top: 1px solid #1a2030; display: none; }
@@ -257,7 +294,6 @@
     .donate .dtag { font-size: 12px; }
     .donate .dhead { font-size: 28px; }
     .donate .dsub { font-size: 14.5px; }
-    .donate .dbtn { font-size: 16px; padding: 17px 28px; }
     .gfm-live { margin: 18px 72px 0; border-radius: 20px; }
     .gfm-live iframe { height: 198px;
       -webkit-mask-image: linear-gradient(to right, transparent 0, transparent 27px, #000 47px, #000 calc(100% - 47px), transparent calc(100% - 27px), transparent 100%), linear-gradient(to bottom, transparent 0, #000 22px, #000 calc(100% - 22px), transparent 100%);
@@ -311,7 +347,7 @@
   <div class="orb" style="top: 560px; left: -120px;"></div>
   <div class="orb" style="top: 980px; right: -140px; animation-delay: -8s;"></div>
   <div class="hero" id="hero">
-    <img class="bg" id="heroimg" src="hero.jpg" srcset="hero-800.jpg 800w, hero-1120.jpg 1120w, hero.jpg 1500w" sizes="100vw" width="1500" height="1125" fetchpriority="high" decoding="async" alt="V and the bike">
+    <picture><source type="image/avif" srcset="hero-800.avif 800w, hero-1120.avif 1120w, hero.avif 1500w" sizes="100vw"><source type="image/webp" srcset="hero-800.webp 800w, hero-1120.webp 1120w, hero.webp 1500w" sizes="100vw"><img class="bg" id="heroimg" src="hero.jpg" srcset="hero-800.jpg 800w, hero-1120.jpg 1120w, hero.jpg 1500w" sizes="100vw" width="1500" height="1125" fetchpriority="high" decoding="async" alt="V and the bike"></picture>
     <div class="scrim"></div>
     <div class="grade"></div>
     <div class="grain"></div>
@@ -334,14 +370,15 @@
     </div>
   </div>
 
+  <div class="finish" id="finish"></div>
   <div class="track-zone reveal">
     <div class="track">
       <div class="fill"></div>
-      <div class="tick" style="left: 33.33%" title="100 miles: done Aug 15"></div>
-      <div class="tick" style="left: 66.67%" title="200 miles: done Aug 26"></div>
+      <div class="tick done" style="left: 33.33%" title="100 miles: done Aug 15"></div>
+      <div class="tick done fresh" style="left: 66.67%" title="200 miles: done Aug 26"></div>
     </div>
-    <div class="tick-labels"><span style="left: 33.33%">100</span><span style="left: 66.67%">200</span></div>
-    <div class="track-labels"><span class="pct"><span id="pctnum">0</span>% complete</span><span>94 miles to go</span></div>
+    <div class="tick-labels"><span class="done" style="left: 33.33%">100</span><span class="done" style="left: 66.67%">200</span></div>
+    <div class="track-labels"><span class="pct"><span id="pctnum">0</span>% complete</span><span>94 miles to go<span id="daysleft"></span></span></div>
   </div>
   <div class="stats">
     <div class="stat reveal" data-tip="Every ride logged &amp; linked below"><div class="n" data-count="12">0</div><div class="l">Rides</div></div>
@@ -383,6 +420,7 @@
     <div class="dtag"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M13.2 2 4.6 13.6h5.7l-.9 8.4 8.6-11.6h-5.7l.9-8.4z"/></svg> Fuel the final 94</div>
     <div class="dhead">Miles are mine. <span>Momentum is yours.</span></div>
     <div class="dsub">Every dollar goes to the American Cancer Society. <span id="draised">$877</span> across 206 miles so far, about <span id="permile">$4.26</span> a mile. And yes, it makes the bike feel faster.</div>
+    <div class="stale" id="stale"></div>
     <a class="dfallback" id="dfallback" href="https://www.gofundme.com/f/im-cycling-300-miles-for-the-american-cancer-society-m4djn" target="_blank" rel="noopener">Donate on GoFundMe &rarr;</a>
     <div class="board" id="board">
       <div class="board-top">
@@ -397,6 +435,7 @@
     </div>
   </div>
   </div>
+  <div class="trainbar reveal" id="trainbar"></div>
   <div class="footer reveal">
     <div>Ride data verified via Strava + Stages sensors &middot; Aug 1&ndash;26, 2026</div>
     <button class="sharebtn" id="sharebtn" type="button">Share this ride</button>
@@ -424,7 +463,36 @@
   }
 
   // Load-in sequence
-  window.addEventListener('load', function () {
+  // Keep the brand row clear of the burger whatever the button ends up measuring.
+  (function () {
+    function fit() {
+      // This script tag sits above the burger markup, so wait for the DOM.
+      var b = document.getElementById('burger'), brand = document.querySelector('.brand');
+      if (!b || !brand) return;
+      var left = parseFloat(getComputedStyle(brand).left) || 0;
+      var need = Math.max(0, b.getBoundingClientRect().right + 14 - left);
+      document.documentElement.style.setProperty('--burger-w', need + 'px');
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', fit);
+    } else {
+      fit();
+    }
+    window.addEventListener('resize', fit);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
+  })();
+
+  // Days left to finish the 300 for ACS. Computed so it never goes stale.
+  (function () {
+    var el = document.getElementById('daysleft');
+    if (!el) return;
+    var days = Math.ceil((new Date('2026-09-13T00:00:00') - new Date()) / 86400000);
+    if (days > 0) el.innerHTML = ' &middot; ' + days + (days === 1 ? ' day left' : ' days left');
+  })();
+
+  function heroStart() {
+    if (heroStart.done) return;
+    heroStart.done = true;
     document.getElementById('flyer').classList.add('loaded');
     var heroReveals = document.querySelectorAll('.hero .reveal, .track-zone.reveal');
     heroReveals.forEach(function (el, i) {
@@ -433,7 +501,15 @@
     var miles = document.getElementById('miles');
     setTimeout(function () { countUp(miles, 206, 0, 1700); }, 500);
     setTimeout(function () { countUp(document.getElementById('pctnum'), 69, 0, 1400); }, 700);
-  });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', heroStart);
+  } else {
+    heroStart();
+  }
+  // Belt and braces: if the hero image is still decoding, let it finish first.
+  var heroImg = document.getElementById('heroimg');
+  if (heroImg && !heroImg.complete) heroImg.addEventListener('load', heroStart);
 
   // Live donation figures from data.json (refreshed by the GoFundMe sync action).
   // Money only. Miles are never touched here, they stay Strava verified.
@@ -525,6 +601,21 @@
       if (Array.isArray(d.donors_list) && d.donors_list.length) {
         board(d.donors_list);
       }
+      // The sync cron can stall. Rather than present old money as current,
+      // say the figures are behind and point at the live widget.
+      var when = Date.parse(d.updated);
+      if (when) {
+        var hrs = (Date.now() - when) / 3600000;
+        if (hrs > 6) {
+          var st = document.getElementById('stale');
+          if (st) {
+            st.textContent = 'Totals last synced ' + (hrs < 48
+              ? Math.round(hrs) + ' hours ago'
+              : Math.round(hrs/24) + ' days ago') + '. The live widget above is current.';
+            st.classList.add('on');
+          }
+        }
+      }
     }).catch(function () {});
   })();
 
@@ -610,12 +701,26 @@
 
 <style>
 /* ===== THE ENGINE ROOM ===== */
-#burger { position: fixed; top: 18px; left: 18px; z-index: 120; width: 46px; height: 46px; border-radius: 14px; background: rgba(13,16,23,.85); border: 1px solid #2a3244; cursor: pointer; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 5px; backdrop-filter: blur(6px); transition: border-color .2s, transform .2s; }
-#burger:hover { border-color: #6d82ff; transform: scale(1.06); }
-#burger span { display: block; width: 20px; height: 2px; background: #c9d2f5; border-radius: 2px; transition: transform .3s, opacity .3s; }
-#burger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
-#burger.open span:nth-child(2) { opacity: 0; }
-#burger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+/* Reads as a burger from across the room. Up close the three bars are the
+   three disciplines, in the same colours the Engine Room charts use. */
+#burger { position: fixed; top: 18px; left: 18px; z-index: 120; height: 46px; padding: 0 14px 0 12px; border-radius: 14px;
+  background: rgba(13,16,23,.85); border: 1px solid #2a3244; cursor: pointer; display: flex; flex-direction: row; align-items: center; gap: 11px;
+  backdrop-filter: blur(6px); transition: border-color .2s, transform .2s, background .2s; font-family: inherit; }
+#burger:hover { border-color: #6d82ff; transform: scale(1.04); background: rgba(18,23,34,.92); }
+#burger .bars { display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: 5px; width: 22px; flex: none; }
+#burger .bars span { display: block; height: 2.5px; border-radius: 2px; transition: transform .35s cubic-bezier(.16,1,.3,1), opacity .25s, width .35s, background .25s; }
+#burger .bars span:nth-child(1) { width: 22px; background: #38bdf8; }
+#burger .bars span:nth-child(2) { width: 16px; background: #6d82ff; }
+#burger .bars span:nth-child(3) { width: 19px; background: #fc5200; }
+#burger:hover .bars span { width: 22px; }
+#burger .tag { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.15; }
+#burger .tag b { font-size: 10px; font-weight: 900; letter-spacing: 1.6px; color: #e7eaf2; }
+#burger .tag i { font-size: 8.5px; font-weight: 800; letter-spacing: 1.4px; color: #6b7489; font-style: normal; }
+#burger.open .bars span { width: 22px; background: #c9d2f5; }
+#burger.open .bars span:nth-child(1) { transform: translateY(7.5px) rotate(45deg); }
+#burger.open .bars span:nth-child(2) { opacity: 0; }
+#burger.open .bars span:nth-child(3) { transform: translateY(-7.5px) rotate(-45deg); }
+@media (max-width: 640px) { #burger { padding: 0 11px; gap: 9px; } #burger .tag b { font-size: 9px; letter-spacing: 1.2px; } #burger .tag i { display: none; } }
 #hq { position: fixed; inset: 0; z-index: 115; background: #05060a; transform: translateX(-102%); transition: transform .5s cubic-bezier(.16,1,.3,1); overflow-y: auto; overscroll-behavior: contain; }
 #hq.open { transform: translateX(0); }
 .hq-wrap { max-width: 1100px; margin: 0 auto; padding: 84px 32px 60px; }
@@ -759,7 +864,7 @@
 }
 </style>
 
-<button id="burger" aria-label="Open training hub"><span></span><span></span><span></span></button>
+<button id="burger" aria-label="Open training hub"><span class="bars"><span></span><span></span><span></span></span><span class="tag"><b>70.3</b><i>TRAINING</i></span></button>
 <div id="hq">
  <div class="hq-wrap">
   <div class="hq-head">
@@ -824,6 +929,11 @@
     <div class="an-cards" id="ancards"></div>
     <div id="andetail"></div>
     <div class="hq-card"><h3>Race readiness <span id="raceleft"></span></h3><div id="readiness"></div></div>
+    <div class="hq-card"><h3>Weekly volume <span style="color:#5b6478;font-weight:700">&middot; last 10 weeks</span></h3>
+      <div class="chartwrap"><div class="yaxis" id="wyaxis"></div>
+        <div><div class="plot" style="height:150px"><div class="grid" id="wgrid"></div><div class="chart" id="wchart"></div></div>
+        <div class="xaxis" id="wxaxis"></div></div></div>
+    </div>
     <div class="hq-card"><h3>Training hours by month</h3>
       <div class="chartwrap"><div class="yaxis" id="yaxis"></div>
         <div><div class="plot"><div class="grid" id="grid"></div><div class="chart" id="chart"></div></div>
@@ -1016,6 +1126,51 @@
     });
   });
 
+  // ---- finish line state, off until ?finish=1 or the race has passed ----
+  (function(){
+    var box = document.getElementById('finish');
+    if (!box) return;
+    var forced = /[?&]finish=1/.test(location.search);
+    if (!forced) return;                       // race-day switch stays manual for now
+    var miles = 0;
+    HQ.acts.forEach(function(a){ if (a.t === 'R') miles += pnum(a.dist); });
+    box.innerHTML = '<div class="fk">Challenge complete</div>' +
+      '<h2>300 miles. <span>Done.</span></h2>' +
+      '<p>Every mile sensor verified, every dollar to the American Cancer Society. ' +
+      'Thank you to everyone who put fuel behind this one.</p>' +
+      '<div class="fstats">' +
+      '<div class="fstat"><b>300</b><span>Miles ridden</span></div>' +
+      '<div class="fstat"><b id="fraised">&mdash;</b><span>Raised for ACS</span></div>' +
+      '<div class="fstat"><b id="fdonors">&mdash;</b><span>Donors</span></div>' +
+      '<div class="fstat"><b>70.3</b><span>Santa Cruz</span></div></div>';
+    box.classList.add('on');
+    fetch('data.json', { cache: 'no-store' }).then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(d){
+        if (!d) return;
+        var a = document.getElementById('fraised'), b = document.getElementById('fdonors');
+        if (a) a.textContent = '$' + Number(d.raised).toLocaleString('en-US');
+        if (b) b.textContent = d.donors;
+      }).catch(function(){});
+  })();
+
+  // ---- public readiness strip on the main page ----
+  (function(){
+    var box = document.getElementById('trainbar');
+    if (!box) return;
+    var days = Math.ceil((new Date('2026-09-13T00:00:00') - new Date()) / 86400000);
+    var rows = ['S','R','N'].map(function(t){
+      var st = stats(t), r = RACE[t], lo = st.longest ? pnum(st.longest.dist) : 0;
+      var pct = Math.min(100, lo/r.need*100);
+      return '<div class="tbrow"><span class="tbl">'+names[t]+'</span>'+
+        '<span class="tbtrack"><span class="tbfill" style="width:'+pct+'%;background:linear-gradient(90deg,'+tcolors[t]+','+tcolors[t]+'99)"></span></span>'+
+        '<span class="tbv">'+Math.round(pct)+'% ready</span></div>';
+    }).join('');
+    box.innerHTML = '<h2>The training behind the miles</h2>'+
+      '<div class="sub">Longest effort so far against each leg of the IRONMAN 70.3 on Sep 13'+
+      (days > 0 ? ', now ' + days + ' days out' : '') + '. Every ACS mile is ridden on this base.</div>' + rows;
+    box.classList.add('on');
+  })();
+
   // ---- race readiness ----
   (function(){
     var left = Math.max(0, Math.round((new Date(RACE.d) - new Date()) / 86400000));
@@ -1038,6 +1193,44 @@
       '<div><div class="sk">Projected total</div><div class="sv">'+(ok ? clock(total+T) : '&mdash;')+'</div></div></div>'+
       '<div class="hq-note" style="margin-top:12px">Projections scale his longest sustained effort in each discipline up to race distance. They assume he holds that pace with no fade, so read them as a best case, not a forecast.</div>';
     document.getElementById('readiness').innerHTML = rows;
+  })();
+
+  // ---- weekly volume, built from the session dates ----
+  (function(){
+    var wk = {}, d;
+    HQ.acts.forEach(function(a){
+      d = new Date(a.d + 'T12:00:00');
+      var dow = (d.getDay() + 6) % 7;             // Monday start
+      d.setDate(d.getDate() - dow);
+      var k = d.toISOString().slice(0,10);
+      if (!wk[k]) wk[k] = {S:0,R:0,N:0,X:0};
+      wk[k][a.t] += (a.sec || 0) / 3600;
+    });
+    var keys = Object.keys(wk).sort().slice(-10);
+    if (!keys.length) return;
+    var tot = keys.map(function(k){ var w = wk[k]; return w.S+w.R+w.N+w.X; });
+    var mx = Math.max.apply(null, tot), step = mx > 15 ? 5 : 2;
+    var top = Math.max(step, Math.ceil(mx/step)*step);
+    var ax = '', gr = '';
+    for (var v = 0; v <= top; v += step) {
+      var y = 100 - (v/top*100);
+      ax += '<span style="top:'+y+'%">'+v+'h</span>';
+      gr += '<i style="top:'+y+'%"></i>';
+    }
+    document.getElementById('wyaxis').innerHTML = ax;
+    document.getElementById('wgrid').innerHTML = gr;
+    document.getElementById('wchart').innerHTML = keys.map(function(k,i){
+      var w = wk[k], t = w.S+w.R+w.N+w.X;
+      var segs = ['S','R','N','X'].map(function(x){
+        var h = (w[x]/top)*100;
+        return h > 0 ? '<div class="seg" style="height:'+h+'%;background:'+colors[x]+'" title="'+names[x]+': '+w[x].toFixed(1)+'h"></div>' : '';
+      }).join('');
+      return '<div class="col"><div class="hv">'+t.toFixed(1)+'</div><div class="stack" style="animation-delay:'+(i*0.05)+'s">'+segs+'</div></div>';
+    }).join('');
+    document.getElementById('wxaxis').innerHTML = keys.map(function(k){
+      var dt = new Date(k + 'T12:00:00');
+      return '<div>'+MON[dt.getMonth()+1]+' '+dt.getDate()+'</div>';
+    }).join('');
   })();
 
   // ---- training hours by month ----
