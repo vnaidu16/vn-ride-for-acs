@@ -1,9 +1,9 @@
 {
-  "raised": 827,
-  "donors": 13,
+  "raised": 877,
+  "donors": 14,
   "goal": 1200,
   "miles": 206,
-  "updated": "2026-08-27T10:08:59Z",
+  "updated": "2026-08-27T19:39:56Z",
   "donors_list": [
     {
       "n": "Adarsh Ravikumar",
@@ -69,6 +69,11 @@
       "n": "Samay Suragimath",
       "a": 100,
       "t": "2026-08-25T17:50:09.000-05:00"
+    },
+    {
+      "n": "Mamatha Parekodi",
+      "a": 50,
+      "t": "2026-08-27T11:09:52.000-05:00"
     }
   ]
 }

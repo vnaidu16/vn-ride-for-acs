@@ -119,6 +119,14 @@ def main():
     if roster:
         new["donors_list"] = roster
 
+    # Only write when something real moved. Refreshing "updated" on every run
+    # committed on every run, which buried the useful commits and made the log
+    # useless for spotting a stalled sync.
+    watched = ("raised", "donors", "goal", "donors_list")
+    if all(new.get(k) == old.get(k) for k in watched):
+        print("no change: raised=%s donors=%s goal=%s" % (raised, donor_count, goal))
+        return
+
     with open(DATA, "w") as f:
         json.dump(new, f, indent=2)
         f.write("\n")
