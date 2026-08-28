@@ -514,6 +514,8 @@
   // Single source for the mileage. Update this one number when a ride is
   // logged and the hero, the deadline badge and miles remaining all follow.
   var MILES_DONE = 206, MILES_GOAL = 300;
+  // The Engine Room runs in its own script tag, so hand these over deliberately.
+  window.MILES_DONE = MILES_DONE; window.MILES_GOAL = MILES_GOAL;
 
   // Milestones. Add one by adding a row: miles, and the date it was cleared.
   var MILESTONES = [
@@ -900,6 +902,26 @@
 .legend span { display: flex; align-items: center; gap: 6px; font-size: 10.5px; color: #8a93ab; font-weight: 700; }
 .legend i { width: 10px; height: 10px; border-radius: 3px; }
 @media (max-width: 700px) { .yaxis, .plot { height: 150px; } .chart, .xaxis { gap: 6px; } }
+.today { border-color: #2746F8 !important; background: linear-gradient(180deg,#0f1524,#0b0e15) !important; }
+.today h3 { color: #8fa1ff !important; }
+.tmeta { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+.tmeta span { font-size: 10px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase;
+  padding: 5px 10px; border-radius: 999px; background: #10141f; border: 1px solid #1e2536; color: #9aa3b8; }
+.tmeta span.hot { color: #ff8e9e; border-color: rgba(255,90,112,.45); background: rgba(255,90,112,.12); }
+.tmeta span.go { color: #00e57c; border-color: rgba(0,229,124,.45); background: rgba(0,229,124,.12); }
+.tsess { display: grid; grid-template-columns: 84px 1fr; gap: 10px 14px; margin-bottom: 14px; }
+.tsess dt { font-size: 11px; font-weight: 900; letter-spacing: 1.3px; text-transform: uppercase; padding-top: 2px; }
+.tsess dd { font-size: 13.5px; color: #d7dcea; line-height: 1.5; }
+.tsess dd b { color: #fff; }
+.tsess .c-S { color: #38bdf8; } .tsess .c-R { color: #6d82ff; }
+.tsess .c-N { color: #fc5200; } .tsess .c-X { color: #9aa3b8; }
+.twhy { border-top: 1px solid #1a2030; padding-top: 13px; font-size: 12.5px; color: #9aa3b8; line-height: 1.65; }
+.twhy b { color: #e7eaf2; }
+.twarn { margin-top: 12px; padding: 11px 14px; border-radius: 12px; font-size: 12.5px; line-height: 1.6;
+  background: rgba(255,90,112,.1); border: 1px solid rgba(255,90,112,.35); color: #ffc3cb; }
+.twarn b { color: #ff8e9e; }
+@media (max-width: 640px) { .tsess { grid-template-columns: 1fr; gap: 4px 0; } .tsess dt { padding-top: 10px; } }
+
 .zone-row { display: grid; grid-template-columns: 40px 1fr; align-items: center; gap: 12px; margin-bottom: 7px; font-size: 12.5px; }
 .zone-row .zl { font-weight: 900; font-size: 10.5px; letter-spacing: .6px; text-align: center; padding: 6px 0; border-radius: 7px;
   color: hsl(var(--c) 88% 74%); background: hsla(var(--c), 88%, 55%, .12); border: 1px solid hsla(var(--c), 88%, 60%, .3); }
@@ -960,7 +982,18 @@
   </div>
 
   <div class="hq-sec active" id="sec-plan">
-    <div class="hq-card"><h3>The mission: 19 days to Santa Cruz</h3>
+    <div class="hq-card today">
+      <h3>Today <span id="todayline" style="color:#5b6478;font-weight:700"></span></h3>
+      <div class="tmeta" id="tmeta"></div>
+      <dl class="tsess">
+        <dt class="c-S">Swim</dt><dd><b>1,800 to 2,000 yd continuous.</b> Not intervals. One unbroken effort at the pace you would hold in the ocean, so the distance stops being a question.</dd>
+        <dt class="c-R">Bike</dt><dd><b>20 to 25 easy.</b> Conversation pace. This is challenge mileage, not a workout. Save the legs.</dd>
+        <dt class="c-N">Run</dt><dd><b>2 to 3 miles straight off the bike, easy.</b> Short on purpose. The point is rehearsing legs that already rode, not building fitness in 17 days.</dd>
+      </dl>
+      <div class="twhy" id="twhy"></div>
+      <div class="twarn" id="twarn"></div>
+    </div>
+    <div class="hq-card"><h3>The mission<span id="missiondays"></span></h3>
       <div class="hq-note">Ironman 70.3: 1.2 mi ocean swim, 56 mi bike, 13.1 mi run. The bike is trending, the run base is real, and the swim distance is essentially there. He is a certified diver, so open water is comfort, not fear. The final block is about holding race pace with the long rides layered on top.</div>
     </div>
     <div class="hq-card"><h3>Weekly shape (5-day block)</h3>
@@ -1222,7 +1255,7 @@
     if (!box) return;
     // Fires on its own the moment the 300 is logged. ?finish=1 previews it early.
     var forced = /[?&]finish=1/.test(location.search);
-    var done = typeof MILES_DONE === 'number' ? MILES_DONE : 0;
+    var done = typeof window.MILES_DONE === 'number' ? window.MILES_DONE : 0;
     if (!forced && done < 300) return;
     box.innerHTML = '<div class="fk">Challenge complete</div>' +
       '<h2>300 miles. <span>Done.</span></h2>' +
@@ -1283,6 +1316,48 @@
       '<div><div class="sk">Projected total</div><div class="sv">'+(ok ? clock(total+T) : '&mdash;')+'</div></div></div>'+
       '<div class="hq-note" style="margin-top:12px">Projections scale his longest sustained effort in each discipline up to race distance. They assume he holds that pace with no fade, so read them as a best case, not a forecast.</div>';
     document.getElementById('readiness').innerHTML = rows;
+  })();
+
+  // ---- today card, written Aug 27 2026 ----
+  (function () {
+    var el = document.getElementById('todayline'); if (!el) return;
+    var now = new Date();
+    var days = Math.ceil((new Date('2026-09-13T00:00:00') - now) / 86400000);
+    var left = Math.ceil((new Date('2026-09-01T00:00:00') - now) / 86400000);
+    var togo = (window.MILES_GOAL || 300) - (window.MILES_DONE || 0);
+    el.textContent = '\u00b7 ' + now.toLocaleDateString('en-US',{weekday:'long', month:'short', day:'numeric'});
+    var md = document.getElementById('missiondays');
+    if (md) md.textContent = ': ' + days + ' days to Santa Cruz';
+
+    // last 7 days of load, straight from the session data
+    var wk = 0, cnt = 0, runMi = 0, cut = new Date(now.getTime() - 7*86400000).toISOString().slice(0,10);
+    var augRun = 0;
+    HQ.acts.forEach(function (a) {
+      if (a.d >= cut) { wk += (a.sec||0)/3600; cnt++; }
+      if (a.t === 'N' && a.d.slice(0,7) === '2026-08') augRun += pnum(a.dist);
+    });
+    document.getElementById('tmeta').innerHTML =
+      '<span class="go">' + wk.toFixed(1) + 'h last 7 days</span>' +
+      '<span>' + cnt + ' sessions</span>' +
+      '<span class="hot">' + togo + ' mi in ' + left + ' days</span>' +
+      '<span>' + days + ' days to race</span>';
+
+    document.getElementById('twhy').innerHTML =
+      '<b>Why this and not more.</b> You are rested: the last four days are light and today is still empty, ' +
+      'so there is room. But the honest gap is running, not swimming. August has ' + augRun.toFixed(1) +
+      ' miles of running across three sessions, longest 3.2, and race day asks for 13.1 off the bike. ' +
+      'The Run bar in Analysis says 100 percent because it measures a half marathon from June, not this month. ' +
+      'Treat that number with suspicion. Seventeen days is too late to build run fitness and just enough to ' +
+      'reintroduce it, which is why today\u2019s run is short and off the bike rather than long and fresh.' +
+      '<br><br><b>Do the sim Saturday, not Sunday.</b> A 56 mile sim on Saturday leaves Sunday and Monday to ' +
+      'close out the challenge, and gives you a fallback day if Saturday goes wrong. Sunday leaves only ' +
+      'Monday, on a deadline that does not move. It also fixes the one readiness number that is genuinely ' +
+      'short: the bike sits at 73 percent because your longest ride is still 40.6.';
+
+    document.getElementById('twarn').innerHTML =
+      '<b>The new Pegasus 42s:</b> do not run the Saturday sim in them, and do not run anything long in them ' +
+      'this week. Break them in on short easy runs first. New shoes 17 days out is fine. New shoes on a race ' +
+      'rehearsal is how you find a hot spot at mile 9 on race day.';
   })();
 
   // ---- weekly volume, built from the session dates ----
