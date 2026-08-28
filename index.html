@@ -796,13 +796,12 @@
 #burger .bars span:nth-child(3) { width: 19px; background: #fc5200; }
 #burger:hover .bars span { width: 22px; }
 #burger .tag { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.15; }
-#burger .tag b { font-size: 10px; font-weight: 900; letter-spacing: 1.6px; color: #e7eaf2; }
-#burger .tag i { font-size: 8.5px; font-weight: 800; letter-spacing: 1.4px; color: #6b7489; font-style: normal; }
+#burger .tri { width: 58px; height: 16px; display: block; opacity: .95; }
 #burger.open .bars span { width: 22px; background: #c9d2f5; }
 #burger.open .bars span:nth-child(1) { transform: translateY(7.5px) rotate(45deg); }
 #burger.open .bars span:nth-child(2) { opacity: 0; }
 #burger.open .bars span:nth-child(3) { transform: translateY(-7.5px) rotate(-45deg); }
-@media (max-width: 640px) { #burger { padding: 0 11px; gap: 9px; } #burger .tag b { font-size: 9px; letter-spacing: 1.2px; } #burger .tag i { display: none; } }
+@media (max-width: 640px) { #burger { padding: 0 11px; gap: 9px; } #burger .tri { width: 46px; height: 13px; } }
 #hq { position: fixed; inset: 0; z-index: 115; background: #05060a; transform: translateX(-102%); transition: transform .5s cubic-bezier(.16,1,.3,1); overflow-y: auto; overscroll-behavior: contain; }
 #hq.open { transform: translateX(0); }
 .hq-wrap { max-width: 1100px; margin: 0 auto; padding: 84px 32px 60px; }
@@ -840,7 +839,30 @@
 .cal-days { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; }
 .cal-wd { font-size: 9px; color: #3d4558; font-weight: 800; text-align: center; padding-bottom: 4px; }
 .cal-cell { aspect-ratio: 1; border-radius: 8px; background: #0d1119; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10.5px; color: #4a5266; position: relative; }
-.cal-cell.has { background: #121828; color: #c9d2f5; cursor: default; border: 1px solid #1e2a45; }
+.cal-cell.has { background: #121828; color: #c9d2f5; cursor: pointer; border: 1px solid #1e2a45; transition: background .18s, border-color .18s, transform .18s; }
+.cal-cell.has:hover { background: #17203a; border-color: #2746F8; transform: translateY(-1px); }
+.cal-cell.has:focus-visible { outline: 2px solid #6d82ff; outline-offset: 2px; }
+.cal-cell.has.open { background: #1b2542; border-color: #6d82ff; }
+.daypop-back { position: fixed; inset: 0; z-index: 129; background: rgba(3,4,8,.5); }
+.daypop { position: fixed; z-index: 130; width: 320px; max-width: calc(100vw - 24px); background: #0d1119;
+  border: 1px solid #2b3550; border-radius: 16px; box-shadow: 0 24px 60px rgba(0,0,0,.7); overflow: hidden;
+  animation: hqin .22s cubic-bezier(.16,1,.3,1); }
+.daypop header { display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+  padding: 13px 16px; border-bottom: 1px solid #1a2030; background: #10141f; }
+.daypop header b { font-size: 13px; color: #f5f6f8; font-weight: 800; }
+.daypop header span { font-size: 10.5px; color: #6b7489; font-weight: 700; }
+.daypop .dp-close { position: absolute; top: 9px; right: 10px; width: 24px; height: 24px; border-radius: 7px;
+  background: transparent; border: 0; color: #6b7489; font-size: 15px; cursor: pointer; line-height: 1; }
+.daypop .dp-close:hover { color: #fff; background: #1a2030; }
+.daypop a.dp-row, .daypop div.dp-row { display: block; padding: 11px 16px; border-bottom: 1px solid #151b28; text-decoration: none; }
+.daypop a.dp-row:hover { background: #131a2a; }
+.daypop .dp-row:last-child { border-bottom: 0; }
+.dp-top { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.dp-top i { width: 7px; height: 7px; border-radius: 50%; flex: none; }
+.dp-top b { font-size: 12.5px; color: #e7eaf2; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dp-top .ext { margin-left: auto; color: #fc5200; font-size: 11px; font-weight: 900; }
+.dp-stats { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 11px; color: #8a93ab; font-variant-numeric: tabular-nums; }
+.dp-stats span b { color: #c3cbdc; font-weight: 700; }
 .cal-dots { display: flex; gap: 3px; }
 .cal-dots i { width: 5px; height: 5px; border-radius: 50%; display: block; }
 .an-cards { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 14px; }
@@ -966,7 +988,7 @@
 }
 </style>
 
-<button id="burger" aria-label="Open training hub"><span class="bars"><span></span><span></span><span></span></span><span class="tag"><b>70.3</b><i>TRAINING</i></span></button>
+<button id="burger" aria-label="Open training hub"><span class="bars"><span></span><span></span><span></span></span><span class="tag"><svg class="tri" viewBox="0 0 44 12" aria-hidden="true"><path d="M1 8.2c1.6-1.5 3.1-1.5 4.7 0 1.6 1.5 3.1 1.5 4.7 0" fill="none" stroke="#38bdf8" stroke-width="1.6" stroke-linecap="round"/><circle cx="18" cy="8" r="3.1" fill="none" stroke="#6d82ff" stroke-width="1.5"/><circle cx="26.5" cy="8" r="3.1" fill="none" stroke="#6d82ff" stroke-width="1.5"/><path d="M18 8l3-3.4h3.2" fill="none" stroke="#6d82ff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="38.4" cy="2.4" r="1.5" fill="#fc5200"/><path d="M41 11.2l-2.1-2.6.5-3.1-2.6 1.5-.7 2.4M36.8 6.5l3-1 2.1 1.3" fill="none" stroke="#fc5200" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
 <div id="hq">
  <div class="hq-wrap">
   <div class="hq-head">
@@ -1107,14 +1129,18 @@
     });
   });
   var wd = ['M','T','W','T','F','S','S'];
+  var MONNUM = {JAN:'01',FEB:'02',MAR:'03',APR:'04',MAY:'05',JUN:'06',JUL:'07',AUG:'08',SEP:'09',OCT:'10',NOV:'11',DEC:'12'};
   document.getElementById('calgrid').innerHTML = HQ.cal.map(function(m){
+    var parts = m.label.split(' ');
+    var ym = parts[1] + '-' + MONNUM[parts[0]];
     var cells = wd.map(function(w){return '<div class="cal-wd">'+w+'</div>';}).join('');
     for (var i=0;i<m.pad;i++) cells += '<div></div>';
     m.days.forEach(function(day){
       if (day.a.length){
         var title = day.a.map(function(x){return names[x.t]+': '+x.n+(x.dist?' ('+x.dist+')':'');}).join('\n');
         var dots = day.a.slice(0,4).map(function(x){return '<i class="c-'+x.t+'"></i>';}).join('');
-        cells += '<div class="cal-cell has" title="'+title.replace(/"/g,'&quot;')+'">'+day.d+'<span class="cal-dots">'+dots+'</span></div>';
+        var ymd = ym + '-' + ('0'+day.d).slice(-2);
+        cells += '<div class="cal-cell has" role="button" tabindex="0" data-day="'+ymd+'" title="'+title.replace(/"/g,'&quot;')+'">'+day.d+'<span class="cal-dots">'+dots+'</span></div>';
       } else cells += '<div class="cal-cell">'+day.d+'</div>';
     });
     return '<div class="cal-month"><h4>'+m.label+'</h4><div class="cal-days">'+cells+'</div></div>';
@@ -1317,6 +1343,72 @@
       '<div><div class="sk">Projected total</div><div class="sv">'+(ok ? clock(total+T) : '&mdash;')+'</div></div></div>'+
       '<div class="hq-note" style="margin-top:12px">Projections scale his longest sustained effort in each discipline up to race distance. They assume he holds that pace with no fade, so read them as a best case, not a forecast.</div>';
     document.getElementById('readiness').innerHTML = rows;
+  })();
+
+  // ---- calendar day popup ----
+  (function () {
+    var pop = null, back = null, openCell = null;
+    function close() {
+      if (pop) { pop.remove(); pop = null; }
+      if (back) { back.remove(); back = null; }
+      if (openCell) { openCell.classList.remove('open'); openCell = null; }
+    }
+    function esc(v) { return String(v).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+    function open(cell) {
+      close();
+      var ymd = cell.getAttribute('data-day');
+      var rows = HQ.acts.filter(function(a){ return a.d === ymd; });
+      if (!rows.length) return;
+      var secs = rows.reduce(function(x,a){ return x + (a.sec||0); }, 0);
+      var dt = new Date(ymd + 'T12:00:00');
+      var head = dt.toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric'});
+
+      back = document.createElement('div'); back.className = 'daypop-back';
+      back.addEventListener('click', close);
+      document.body.appendChild(back);
+
+      pop = document.createElement('div'); pop.className = 'daypop';
+      pop.innerHTML = '<header><b>' + head + '</b><span>' + rows.length +
+        (rows.length === 1 ? ' session' : ' sessions') + ' &middot; ' + clock(secs) + '</span>' +
+        '<button class="dp-close" type="button" aria-label="Close">&times;</button></header>' +
+        rows.map(function(a){
+          var bits = [];
+          if (a.dist) bits.push('<span><b>' + esc(a.dist) + '</b></span>');
+          bits.push('<span>' + esc(a.time) + '</span>');
+          if (a.pace) bits.push('<span>' + esc(a.pace) + '</span>');
+          if (a.hr) bits.push('<span>' + a.hr + ' bpm</span>');
+          if (a.eff) bits.push('<span>' + a.eff + ' eff</span>');
+          if (a.elev) bits.push('<span>' + Math.round(a.elev * 3.28084) + ' ft</span>');
+          if (a.kcal) bits.push('<span>' + a.kcal + ' kcal</span>');
+          var inner = '<div class="dp-top"><i class="c-' + a.t + '" style="background:' + colors[a.t] + '"></i>' +
+            '<b>' + esc(a.n) + '</b>' + (a.id ? '<span class="ext">\u2197</span>' : '') + '</div>' +
+            '<div class="dp-stats">' + bits.join('') + '</div>';
+          return a.id
+            ? '<a class="dp-row" target="_blank" rel="noopener" href="https://www.strava.com/activities/' + a.id + '">' + inner + '</a>'
+            : '<div class="dp-row">' + inner + '</div>';
+        }).join('');
+      document.body.appendChild(pop);
+      pop.querySelector('.dp-close').addEventListener('click', close);
+
+      var r = cell.getBoundingClientRect(), pr = pop.getBoundingClientRect();
+      var left = Math.min(Math.max(8, r.left + r.width/2 - pr.width/2), innerWidth - pr.width - 8);
+      var top = r.bottom + 8;
+      if (top + pr.height > innerHeight - 8) top = Math.max(8, r.top - pr.height - 8);
+      pop.style.left = left + 'px'; pop.style.top = top + 'px';
+      openCell = cell; cell.classList.add('open');
+    }
+    document.addEventListener('click', function(e){
+      var cell = e.target.closest && e.target.closest('.cal-cell.has');
+      if (cell) { e.stopPropagation(); open(cell); }
+    });
+    document.addEventListener('keydown', function(e){
+      if (e.key === 'Escape') return close();
+      if ((e.key === 'Enter' || e.key === ' ') && document.activeElement &&
+          document.activeElement.classList && document.activeElement.classList.contains('has')) {
+        e.preventDefault(); open(document.activeElement);
+      }
+    });
+    window.addEventListener('resize', close);
   })();
 
   // ---- today card, written Aug 27 2026 ----
