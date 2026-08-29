@@ -235,7 +235,23 @@
   @media (min-width: 1000px) { .trainbar { margin: 20px 72px 0; padding: 22px 36px; border-radius: 20px; } }
   @media (max-width: 640px) { .trainbar { margin: 14px 22px 0; padding: 15px 18px; } .trainbar h2 { letter-spacing: 4px; } .tbrow { grid-template-columns: 44px 1fr 78px; font-size: 11px; } }
 
+  .why { margin: 20px 52px 0; background: #0d1017; border: 1px solid #1a2030; border-left: 3px solid #ff5a70;
+    border-radius: 16px; padding: 20px 26px; position: relative; z-index: 1; }
+  .why h2 { font-size: 11px; letter-spacing: 6px; text-transform: uppercase; color: #ff8e9e; font-weight: 800; margin-bottom: 12px; }
+  .why p { font-size: 14.5px; line-height: 1.7; color: #d7dcea; margin-bottom: 9px; }
+  .why p.sig { font-size: 16px; font-weight: 800; color: #fff; margin: 13px 0 0; }
+  @media (min-width: 1000px) { .why { margin: 24px 72px 0; padding: 26px 36px; border-radius: 20px; }
+    .why p { font-size: 16px; } .why p.sig { font-size: 18px; } }
+  @media (max-width: 640px) { .why { margin: 16px 22px 0; padding: 16px 18px; }
+    .why h2 { letter-spacing: 4px; } .why p { font-size: 13.5px; } .why p.sig { font-size: 15px; } }
+  .thanks { font-size: 12px; color: #9aa3b8; margin: -2px 0 10px; }
+
   /* ---- DONOR LEADERBOARD ---- */
+  .finride { display: none; margin: 8px 0 2px; padding: 9px 13px; border-radius: 10px; font-size: 12px; font-weight: 700;
+    background: rgba(0,229,124,.12); border: 1px solid rgba(0,229,124,.42); color: #00e57c; }
+  .finride.on { display: block; }
+  .log .row.fin { background: rgba(0,229,124,.1); border-radius: 8px; box-shadow: inset 0 0 0 1px rgba(0,229,124,.35); }
+  .log .row.fin b { color: #00e57c; }
   .board { margin-top: 15px; padding-top: 13px; border-top: 1px solid #1a2030; display: none; }
   .board.on { display: block; }
   .board-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 6px; }
@@ -407,16 +423,17 @@
       <div id="ticks"></div>
     </div>
     <div class="tick-labels" id="ticklabels"></div>
-    <div class="track-labels"><span class="pct"><span id="pctnum">0</span>% complete</span><span>56 miles to go<span id="daysleft"></span></span></div>
+    <div class="track-labels"><span class="pct"><span id="pctnum">0</span>% complete</span><span><span id="togo">56 miles to go</span><span id="daysleft"></span></span></div>
   </div>
   <div class="stats">
-    <div class="stat reveal" data-tip="Every ride logged &amp; linked below"><div class="n" data-count="14">0</div><div class="l">Rides</div></div>
-    <div class="stat reveal" data-tip="About 1:09 in the saddle per ride"><div class="n">16:03:20</div><div class="l">Hours Logged</div></div>
+    <div class="stat reveal" data-tip="Every ride logged &amp; linked below"><span id="statRides"><div class="n" data-count="14">0</div><div class="l">Rides</div></span></div>
+    <div class="stat reveal" data-tip="About 1:09 in the saddle per ride"><span id="statHours"><div class="n">16:03:20</div><div class="l">Hours Logged</div></span></div>
     <div class="stat reveal" data-tip="Aug 22 night ride, longest yet"><div class="n" data-count="40.6" data-dec="1">0</div><div class="l">Longest (mi)</div></div>
-    <div class="stat reveal" data-tip="Across all 244 miles"><div class="n" data-count="15.2" data-dec="1">0</div><div class="l">Avg mph</div></div>
+    <div class="stat reveal" data-tip="Across all 244 miles"><span id="statAvg"><div class="n" data-count="15.2" data-dec="1">0</div><div class="l">Avg mph</div></span></div>
   </div>
   <div class="log reveal">
     <h2>August ride log</h2>
+    <div class="finride" id="finride"></div>
     <div class="hint">Every ride is a receipt. <em>Tap ↗ to open it on Strava</em></div>
     <div class="log-grid">
       <div>
@@ -439,6 +456,12 @@
       </div>
     </div>
   </div>
+  <div class="why reveal">
+    <h2>Why the American Cancer Society</h2>
+    <p>I have done Relay For Life for years. These past few, cancer has reached some of my closest friends and family.</p>
+    <p>Three hundred miles is a small thing to give back.</p>
+    <p class="sig">We do it for them.</p>
+  </div>
   <div class="integrity reveal">
     <b>Accuracy promise</b><br>We only count miles accurately captured by cycle sensor, with data to prove it. Cancer doesn't cut corners. Neither do we.
   </div>
@@ -448,9 +471,9 @@
     <div class="gfm-embed" data-url="https://www.gofundme.com/f/im-cycling-300-miles-for-the-american-cancer-society-m4djn/widget/medium"></div>
   </div>
   <div class="donate reveal">
-    <div class="dtag"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M13.2 2 4.6 13.6h5.7l-.9 8.4 8.6-11.6h-5.7l.9-8.4z"/></svg> Fuel the final 56</div>
+    <div class="dtag" id="dtag"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M13.2 2 4.6 13.6h5.7l-.9 8.4 8.6-11.6h-5.7l.9-8.4z"/></svg> Fuel the final 56</div>
     <div class="dhead">Miles are mine. <span>Momentum is yours.</span></div>
-    <div class="dsub">Every dollar goes to the American Cancer Society. <span id="draised">$877</span> across 244 miles so far, about <span id="permile">$3.59</span> a mile. And yes, it makes the bike feel faster.</div>
+    <div class="dsub">Every dollar goes to the American Cancer Society. <span id="draised">$877</span> across <span id="milesSoFar">244</span> miles so far, about <span id="permile">$3.59</span> a mile. And yes, it makes the bike feel faster.</div>
     <div class="stale" id="stale"></div>
     <a class="dfallback" id="dfallback" href="https://www.gofundme.com/f/im-cycling-300-miles-for-the-american-cancer-society-m4djn" target="_blank" rel="noopener">Donate on GoFundMe &rarr;</a>
     <div class="board" id="board">
@@ -461,6 +484,7 @@
           <button type="button" data-sort="first" aria-selected="false">First donors</button>
         </div>
       </div>
+      <div class="thanks" id="thanks"></div>
       <div id="brows"></div>
       <button class="bmore" id="bmore" type="button">See more</button>
     </div>
@@ -468,13 +492,27 @@
   </div>
   <div class="trainbar reveal" id="trainbar"></div>
   <div class="footer reveal">
-    <div>Ride data verified via Strava + Stages sensors &middot; Aug 1&ndash;28, 2026</div>
+    <div id="footerRange">Ride data verified via Strava + Stages sensors &middot; Aug 1&ndash;28, 2026</div>
     <button class="sharebtn" id="sharebtn" type="button">Share this ride</button>
     <div class="sig">V</div>
   </div>
 </div>
 
 <script>
+  // ============================================================
+  // LOGGING A RIDE: edit this block, then the two meta tags in
+  // <head> and regenerate og.jpg. Everything visible follows.
+  var RIDE = {
+    done:    244,          // challenge miles, sum of the ride log
+    goal:    300,
+    rides:   14,
+    hours:   '16:03:20',   // total time across the logged rides
+    avgMph:  15.2,
+    perRide: '1:09',       // hours / rides, for the tooltip
+    through: 'Aug 1&ndash;28, 2026'
+  };
+  var MILES_DONE = RIDE.done, MILES_GOAL = RIDE.goal;
+
 (function () {
   var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var desktopFine = window.matchMedia('(min-width: 1000px) and (pointer: fine)').matches;
@@ -494,6 +532,42 @@
   }
 
   // Load-in sequence
+  // The ride that crosses the goal gets marked in the log, once there is one.
+  (function () {
+    if (RIDE.done < RIDE.goal) return;
+    var rows = document.querySelectorAll('.log .row');
+    if (!rows.length) return;
+    var last = rows[0];                       // log is newest first
+    last.classList.add('fin');
+    var note = document.getElementById('finride');
+    if (note) {
+      var d = last.querySelector('span'), mi = last.querySelector('b');
+      note.textContent = 'The one that finished it: ' + (d ? d.textContent : '') +
+        (mi ? ', ' + mi.textContent : '') + '. Three hundred done.';
+      note.classList.add('on');
+    }
+  })();
+
+  // Every visible challenge figure written from RIDE, so a ride is one edit.
+  (function () {
+    var pct = RIDE.done / RIDE.goal * 100, togo = RIDE.goal - RIDE.done;
+    function set(id, v) { var el = document.getElementById(id); if (el) el.innerHTML = v; }
+    var css = document.createElement('style');
+    css.textContent = '.loaded .fill{width:' + pct.toFixed(1) + '%}' +
+      '@media (prefers-reduced-motion: reduce){.loaded .fill,.fill{width:' + pct.toFixed(1) + '%}}';
+    document.head.appendChild(css);
+    set('togo', togo + ' miles to go');
+    set('statRides', '<div class="n" data-count="' + RIDE.rides + '">0</div><div class="l">Rides</div>');
+    set('statHours', '<div class="n">' + RIDE.hours + '</div><div class="l">Hours Logged</div>');
+    set('statAvg', '<div class="n" data-count="' + RIDE.avgMph + '" data-dec="1">0</div><div class="l">Avg mph</div>');
+    var a = document.getElementById('statAvg'), r = document.getElementById('statHours');
+    if (a) a.parentNode.setAttribute('data-tip', 'Across all ' + RIDE.done + ' miles');
+    if (r) r.parentNode.setAttribute('data-tip', 'About ' + RIDE.perRide + ' in the saddle per ride');
+    set('dtag', '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M13.2 2 4.6 13.6h5.7l-.9 8.4 8.6-11.6h-5.7l.9-8.4z"/></svg> Fuel the final ' + togo);
+    set('milesSoFar', RIDE.done);
+    set('footerRange', 'Ride data verified via Strava + Stages sensors &middot; ' + RIDE.through);
+  })();
+
   // Keep the brand row clear of the burger whatever the button ends up measuring.
   (function () {
     function fit() {
@@ -515,16 +589,17 @@
 
   // Single source for the mileage. Update this one number when a ride is
   // logged and the hero, the deadline badge and miles remaining all follow.
-  var MILES_DONE = 244, MILES_GOAL = 300;
   // The Engine Room runs in its own script tag, so hand these over deliberately.
   window.MILES_DONE = MILES_DONE; window.MILES_GOAL = MILES_GOAL;
 
   // Milestones. Add one by adding a row: miles, and the date it was cleared.
+  // A milestone with a date shows it. One without marks itself as soon as
+  // the mileage passes, so nothing sits grey on a bar already past it.
   var MILESTONES = [
     { mi: 100, done: 'Aug 15' },
     { mi: 200, done: 'Aug 26' },
     { mi: 250, done: null }
-  ];
+  ].map(function (m) { if (!m.done && RIDE.done >= m.mi) m.done = 'cleared'; return m; });
   (function () {
     var track = document.getElementById('ticks'), labs = document.getElementById('ticklabels');
     if (!track || !labs) return;
@@ -533,13 +608,13 @@
     track.innerHTML = MILESTONES.map(function (m) {
       var left = (m.mi / MILES_GOAL * 100).toFixed(2);
       var cls = m.done ? 'tick done' + (m === newest ? ' fresh' : '') : 'tick next';
-      var title = m.mi + ' miles: ' + (m.done ? 'done ' + m.done : 'up next');
+      var title = m.mi + ' miles: ' + (m.done ? (m.done === 'cleared' ? 'cleared' : 'done ' + m.done) : 'up next');
       return '<div class="' + cls + '" style="left:' + left + '%" title="' + title + '"></div>';
     }).join('');
     var host = document.getElementById('mrow');
     if (host && newest) {
       host.innerHTML = '<div class="mstone" style="left:' + (newest.mi / MILES_GOAL * 100).toFixed(2) + '%">' +
-        '&#10003; ' + newest.mi + ' cleared ' + newest.done + '</div>';
+        '&#10003; ' + newest.mi + (newest.done === 'cleared' ? ' cleared' : ' cleared ' + newest.done) + '</div>';
     }
     labs.innerHTML = MILESTONES.map(function (m) {
       var left = (m.mi / MILES_GOAL * 100).toFixed(2);
@@ -583,7 +658,7 @@
     });
     var miles = document.getElementById('miles');
     setTimeout(function () { countUp(miles, MILES_DONE, 0, 1700); }, 500);
-    setTimeout(function () { countUp(document.getElementById('pctnum'), 81, 0, 1400); }, 700);
+    setTimeout(function () { countUp(document.getElementById('pctnum'), Math.round(RIDE.done/RIDE.goal*100), 0, 1400); }, 700);
   }
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', heroStart);
@@ -600,6 +675,19 @@
     function money(n) {
       return '$' + Number(n).toLocaleString('en-US');
     }
+    // One request for data.json, shared by the money figures, the leaderboard
+    // and the finish state. no-store meant three full fetches per page view.
+    var dataPromise = null;
+    function siteData() {
+      if (!dataPromise) {
+        dataPromise = fetch('data.json', { cache: 'no-cache' })
+          .then(function (r) { return r.ok ? r.json() : null; })
+          .catch(function () { return null; });
+      }
+      return dataPromise;
+    }
+    window.siteData = siteData;
+
     // Names come from GoFundMe, so every field is written with textContent.
     function board(roster) {
       var box = document.getElementById('board');
@@ -665,12 +753,12 @@
           draw();
         });
       }
+      var th = document.getElementById('thanks');
+      if (th) th.textContent = roster.length + ' people have put fuel behind this. Thank you.';
       draw();
       box.classList.add('on');
     }
-    fetch('data.json', { cache: 'no-store' }).then(function (r) {
-      return r.ok ? r.json() : null;
-    }).then(function (d) {
+    siteData().then(function (d) {
       if (!d) return;
       var raised = Number(d.raised);
       var miles = Number(d.miles);
@@ -1377,7 +1465,7 @@
       '<div class="fstat"><b id="fdonors">&mdash;</b><span>Donors</span></div>' +
       '<div class="fstat"><b>70.3</b><span>Santa Cruz</span></div></div>';
     box.classList.add('on');
-    fetch('data.json', { cache: 'no-store' }).then(function(r){ return r.ok ? r.json() : null; })
+    (window.siteData ? window.siteData() : Promise.resolve(null))
       .then(function(d){
         if (!d) return;
         var a = document.getElementById('fraised'), b = document.getElementById('fdonors');
@@ -1455,9 +1543,9 @@
         verdict:'<span class="ok">Covered.</span> You swam <b>2,250 yd continuous</b> on Aug 27, past the 2,112 this asks. What is left is the difference between a pool and a bay: chop, salt, sighting and a wetsuit. That is what Saturday at the lake is for.' },
       { t:'R', c:'#6d82ff', name:'Bike', big:'56 mi', alt:'90.1 km',
         desc:'Out and back on Highway 1 along the coast. No single big climb, but continuous rolling with exposed sections where the westerly matters more than the gradient.',
-        facts:[['Climbing','1,900 to 3,000 ft'],['Terrain','Rolling'],['Shape','Out and back'],['Your longest','40.6 mi']],
+        facts:[['Climbing','2,400 to 3,000 ft'],['Terrain','Rolling'],['Shape','Out and back'],['Your longest','40.6 mi']],
         prof:[[0,10],[30,22],[60,14],[95,30],[130,18],[160,34],[195,20],[230,32],[265,16],[300,12]],
-        verdict:'<span class="flag">This is the gap.</span> Sources put the climbing between <b>1,900 and 3,000 ft</b>. Your entire recorded bike climbing this year is <b>1,161 ft</b>, and 22 of your 23 rides logged zero. Whichever number is right, race day has more climbing in one ride than your whole season. Not a fitness problem at this point, a pacing one: rolling terrain punishes anyone who rides it like it is flat.' },
+        verdict:'<span class="flag">This is the gap.</span> The published course routes put the climbing between <b>2,400 and 3,000 ft</b>: the ZOOT route reads 2,468 over 56.0 mi, another reads 3,003 over 55.7. Your entire recorded bike climbing this year is <b>1,161 ft</b>, and 22 of your 23 rides logged zero. Whichever number is right, race day has more climbing in one ride than your whole season. Not a fitness problem at this point, a pacing one: rolling terrain punishes anyone who rides it like it is flat.' },
       { t:'N', c:'#fc5200', name:'Run', big:'13.1 mi', alt:'21.4 km',
         desc:'Parks and coastal bluffs, finishing on the beach. Billed as flat and mostly is, with enough bluff rollers to notice on tired legs.',
         facts:[['Climbing','About 660 ft'],['Terrain','Flat to rolling'],['Finish','Beach'],['Your longest','13.1 mi']],
@@ -1476,9 +1564,10 @@
     }).join('');
 
     document.getElementById('srcnote').innerHTML =
-      'Course figures are gathered from public race information and athlete reports, not the official athlete guide, ' +
-      'and they disagree with each other on bike climbing. The range is shown rather than a single number for that reason. ' +
-      'Confirm against the IRONMAN athlete guide when it is published, and these can be tightened.';
+      'Distance is consistent everywhere at 56 mi and 90.1 km. Climbing is not: published route files for the same course ' +
+      'range from 2,468 to 3,003 ft, so the range is shown rather than a single invented number. ' +
+      'Sources are public route files and athlete reports, not the official athlete guide. ' +
+      'Send the guide and these get replaced with exact figures.';
   })();
 
   // ---- calendar day popup ----
@@ -1578,6 +1667,19 @@
         html: '<b>Whatever is left to reach 300.</b> <em>Buffer day. If Sunday goes to plan there is nothing to do here but finish.</em>' }
     ];
     var todayStr = new Date(now.getTime() - now.getTimezoneOffset()*60000).toISOString().slice(0,10);
+    // Once the block is behind us the day by day plan is noise, so it retires
+    // itself and the card carries the state instead.
+    if (todayStr > PLAN[PLAN.length - 1].d) {
+      document.getElementById('plandays').innerHTML =
+        '<div class="pday"><div class="pd">Done<small>Aug 31</small></div><div class="pv">' +
+        (RIDE.done >= RIDE.goal
+          ? '<b>300 miles, closed out.</b> <em>The challenge is finished. What is left is the race.</em>'
+          : '<b>The August block is over at ' + RIDE.done + ' miles.</b> <em>Focus shifts entirely to Sep 13.</em>') +
+        '</div></div>';
+      var h = document.getElementById('todayline');
+      if (h) h.textContent = '\u00b7 ' + days + ' days to Santa Cruz';
+      return;
+    }
     document.getElementById('plandays').innerHTML = PLAN.map(function (r) {
       var cls = 'pday' + (r.key ? ' key' : '') + (r.d === todayStr ? ' now' : '');
       return '<div class="' + cls + '"><div class="pd">' + r.label +
