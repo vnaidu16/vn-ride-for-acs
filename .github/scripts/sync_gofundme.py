@@ -110,7 +110,9 @@ def main():
     new["donors"] = donor_count
     new["goal"] = goal
     new["updated"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-    # miles stays exactly as it was, never derived from GoFundMe.
+    # Miles are not in this file at all. They live in the RIDE block in
+    # index.html, which is the single place they are ever authored. A copy
+    # here drifted out of step with it and got used for the per-mile figure.
 
     roster = donors(apollo)
     # A parse that loses the whole roster is a bad parse, not an empty one.

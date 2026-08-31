@@ -2,6 +2,10 @@ name: Sync GoFundMe totals
 
 on:
   schedule:
+    # Nominally every 15 minutes. In practice GitHub throttles scheduled jobs on
+    # shared runners hard, and this one actually lands about three times a day
+    # (observed Aug 31: 00:16, 05:56, 13:25 UTC). Do not size any staleness
+    # warning in index.html against the interval written here; use a day scale.
     - cron: '*/15 * * * *'
   workflow_dispatch:
 

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -217,6 +217,15 @@
   .finish .fstats { display: flex; justify-content: center; flex-wrap: wrap; gap: 26px; margin-top: 16px; }
   .finish .fstat b { display: block; font-size: 22px; font-weight: 900; color: #f5f6f8; font-variant-numeric: tabular-nums; }
   .finish .fstat span { font-size: 10px; letter-spacing: 1.6px; text-transform: uppercase; color: #5b6478; font-weight: 800; }
+  .finish .fask { display: none; margin: 20px auto 0; max-width: 620px; padding-top: 18px; border-top: 1px solid #1c2231; }
+  .finish .fask.on { display: block; }
+  .finish .fask p { font-size: 14px; color: #c3cad9; margin: 0 0 14px; }
+  .finish .fask p b { color: #fff; font-weight: 800; }
+  .finish .fcta { display: inline-block; background: #00e57c; color: #06120c; font-weight: 900; font-size: 14px;
+    letter-spacing: .2px; padding: 13px 26px; border-radius: 999px; text-decoration: none;
+    transition: transform .15s ease, box-shadow .15s ease; }
+  .finish .fcta:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(0,229,124,.3); }
+  @media (prefers-reduced-motion: reduce) { .finish .fcta:hover { transform: none; } }
   @media (min-width: 1000px) { .finish { padding: 34px 72px 28px; } .finish h2 { font-size: 40px; } }
   @media (max-width: 640px) { .finish { padding: 20px 22px 18px; } .finish h2 { font-size: 23px; } .finish .fstats { gap: 16px; } }
 
@@ -489,8 +498,8 @@
   <div class="donate reveal">
     <div class="dtag" id="dtag"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M13.2 2 4.6 13.6h5.7l-.9 8.4 8.6-11.6h-5.7l.9-8.4z"/></svg> Fuel the final 56</div>
     <div class="dhead">Miles are mine. <span>Momentum is yours.</span></div>
-    <div class="dsub">Every dollar goes to the American Cancer Society. <span id="draised">$927</span> across <span id="milesSoFar">244</span> miles so far, about <span id="permile">$3.09</span> a mile. And yes, it makes the bike feel faster.</div>
-    <div class="stale" id="stale"></div>
+    <div class="dsub" aria-live="polite">Every dollar goes to the American Cancer Society. <span id="draised">$927</span> across <span id="milesSoFar">244</span> miles so far, about <span id="permile">$3.09</span> a mile. And yes, it makes the bike feel faster.</div>
+    <div class="stale" id="stale" role="status"></div>
     <a class="dfallback" id="dfallback" href="https://www.gofundme.com/f/im-cycling-300-miles-for-the-american-cancer-society-m4djn" target="_blank" rel="noopener">Donate on GoFundMe &rarr;</a>
     <div class="board" id="board">
       <div class="board-top">
@@ -656,7 +665,21 @@
         : '';
     }
     var d = document.getElementById('deadline');
-    if (!d || togo <= 0) return;
+    if (!d) return;
+    // Goal already banked. The countdown is meaningless now, but the closing
+    // day of the challenge still deserves to be marked rather than passing in
+    // silence. Expires on its own once the window shuts.
+    if (togo <= 0) {
+      if (days === 1) {
+        d.innerHTML = '<span class="ddot"></span><b>Final day</b><i>300 of 300 already banked</i>';
+        d.classList.add('on', 'final');
+      } else if (days > 1) {
+        d.innerHTML = '<span class="ddot"></span><b>Goal beaten</b>' +
+          '<i>' + days + ' days early</i>';
+        d.classList.add('on');
+      }
+      return;
+    }
     if (days > 1) {
       d.innerHTML = '<span class="ddot"></span><b>' + days + ' days left</b>' +
         '<i>' + togo + ' miles to ride by Aug 31</i>';
@@ -781,7 +804,9 @@
     siteData().then(function (d) {
       if (!d) return;
       var raised = Number(d.raised);
-      var miles = Number(d.miles);
+      // Miles come from RIDE, which is the only place they are ever authored.
+      // data.json used to carry its own copy and the two drifted apart.
+      var miles = Number(window.MILES_DONE);
       if (!isFinite(raised) || raised <= 0) return;
       var el = document.getElementById('draised');
       if (el) el.textContent = money(raised);
@@ -792,17 +817,19 @@
       if (Array.isArray(d.donors_list) && d.donors_list.length) {
         board(d.donors_list);
       }
-      // The sync cron can stall. Rather than present old money as current,
-      // say the figures are behind and point at the live widget.
+      // "updated" moves only when the money moves, not on every sync, so it
+      // reads "last changed" and never "last checked". Saying "synced" here was
+      // wrong: a quiet day tripped it while the totals were perfectly current.
+      // The threshold is deliberately long, because the scheduled job actually
+      // lands about three times a day whatever the cron expression claims.
       var when = Date.parse(d.updated);
       if (when) {
         var hrs = (Date.now() - when) / 3600000;
-        if (hrs > 6) {
+        if (hrs > 36) {
           var st = document.getElementById('stale');
           if (st) {
-            st.textContent = 'Totals last synced ' + (hrs < 48
-              ? Math.round(hrs) + ' hours ago'
-              : Math.round(hrs/24) + ' days ago') + '. The live widget above is current.';
+            st.textContent = 'These totals last changed ' + Math.round(hrs / 24) +
+              ' days ago. The live widget above is always current.';
             st.classList.add('on');
           }
         }
@@ -1531,7 +1558,10 @@
       '<div class="fstat"><b>300</b><span>Miles ridden</span></div>' +
       '<div class="fstat"><b id="fraised">&mdash;</b><span>Raised for ACS</span></div>' +
       '<div class="fstat"><b id="fdonors">&mdash;</b><span>Donors</span></div>' +
-      '<div class="fstat"><b>70.3</b><span>Santa Cruz</span></div></div>';
+      '<div class="fstat"><b>70.3</b><span>Santa Cruz</span></div></div>' +
+      '<div class="fask" id="fask"><p id="faskline"></p>' +
+      '<a class="fcta" href="https://www.gofundme.com/f/im-cycling-300-miles-for-the-american-cancer-society-m4djn" ' +
+      'target="_blank" rel="noopener">Close the gap &rarr;</a></div>';
     box.classList.add('on');
     (window.siteData ? window.siteData() : Promise.resolve(null))
       .then(function(d){
@@ -1539,6 +1569,19 @@
         var a = document.getElementById('fraised'), b = document.getElementById('fdonors');
         if (a) a.textContent = '$' + Number(d.raised).toLocaleString('en-US');
         if (b) b.textContent = d.donors;
+        // The riding is finished. The fundraiser is not, so say so plainly
+        // rather than letting the page read like the whole thing is over.
+        var raised = Number(d.raised), goal = Number(d.goal), gap = goal - raised;
+        var ask = document.getElementById('fask'), line = document.getElementById('faskline');
+        if (ask && line && isFinite(gap)) {
+          line.innerHTML = gap > 0
+            ? 'The miles are done. The fundraiser is not. <b>$' + gap.toLocaleString('en-US') +
+              '</b> still stands between here and the $' + goal.toLocaleString('en-US') +
+              ' goal, and it all goes to the American Cancer Society.'
+            : 'The miles are done and the goal is beaten. Every dollar from here still ' +
+              'goes straight to the American Cancer Society.';
+          ask.classList.add('on');
+        }
       }).catch(function(){});
   })();
 
@@ -1634,7 +1677,7 @@
       'The swim leg recorded 0:00 inside the multisport session, so its time comes from the separate tracked swim. ' +
       'Bike distance is the watch reading of 56.14. The projection holds each of these paces over the full race ' +
       'distances and adds ten minutes of transitions, so it assumes no fade across a longer day. Read it as a ceiling.' +
-      '<br><br><b>Treat the 13.0 mph as unusable.</b> That ride came two days after a 2:55 Z2 effort, on a commercial street stopping for a light every ten to fifteen minutes, and the pause button was pressed for some of those stops and forgotten for others. So the 4:19:08 is neither moving time nor elapsed time, and the average speed it produces corresponds to no real riding. The honest reading is that the true number is <b>higher</b> than 13.0, by an unknown amount. Sep 5 exists to replace it.';
+      '<br><br><b>The 13.0 mph does not mean anything.</b> Ridden on a commercial street with a light every ten to fifteen minutes, on legs two days off a 2:55 effort, and the pause button caught some stops but not all of them. So the true figure is higher than 13.0 by an unknown amount. Sep 5 replaces it with a clean one.';
   })();
 
   // Hand the first script what it needs about the sessions.
