@@ -220,6 +220,21 @@
   @media (min-width: 1000px) { .finish { padding: 34px 72px 28px; } .finish h2 { font-size: 40px; } }
   @media (max-width: 640px) { .finish { padding: 20px 22px 18px; } .finish h2 { font-size: 23px; } .finish .fstats { gap: 16px; } }
 
+  .track { display: none; margin: 16px 52px 0; background: linear-gradient(135deg,#121420,#0d1017); border: 1px solid #2b3550;
+    border-left: 3px solid #ED1C24; border-radius: 16px; padding: 20px 26px; position: relative; z-index: 1; }
+  .track.on { display: block; }
+  .track h2 { font-size: 11px; letter-spacing: 5px; text-transform: uppercase; color: #ED1C24; font-weight: 800; margin-bottom: 10px; }
+  .track .tname { font-size: 20px; font-weight: 900; color: #f5f6f8; letter-spacing: -.3px; }
+  .track .tcat { font-size: 12px; color: #8a93ab; font-weight: 700; margin-top: 2px; }
+  .track .trow { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0 12px; }
+  .track .trow div { flex: 1; min-width: 110px; background: #0b0e15; border: 1px solid #1e2536; border-radius: 11px; padding: 10px 13px; }
+  .track .trow .k { font-size: 9px; letter-spacing: 1.2px; text-transform: uppercase; color: #5b6478; font-weight: 800; }
+  .track .trow .v { font-size: 15px; font-weight: 900; color: #f5f6f8; margin-top: 2px; font-variant-numeric: tabular-nums; }
+  .track .how { font-size: 12.5px; color: #9aa3b8; line-height: 1.6; }
+  .track .how b { color: #e7eaf2; }
+  @media (min-width: 1000px) { .track { margin: 20px 72px 0; padding: 24px 36px; border-radius: 20px; } .track .tname { font-size: 24px; } }
+  @media (max-width: 640px) { .track { margin: 14px 22px 0; padding: 15px 18px; } .track h2 { letter-spacing: 3px; } .track .tname { font-size: 17px; } }
+
   /* Sits below the donate ask on purpose. The fundraiser leads, the
      training is the evidence that the miles will actually get ridden. */
   .trainbar { display: none; margin: 16px 52px 0; background: #0d1017; border: 1px solid #1a2030; border-radius: 16px; padding: 18px 26px; position: relative; z-index: 1; }
@@ -428,7 +443,7 @@
   <div class="stats">
     <div class="stat reveal" data-tip="Every ride logged &amp; linked below"><span id="statRides"><div class="n" data-count="14">0</div><div class="l">Rides</div></span></div>
     <div class="stat reveal" data-tip="About 1:09 in the saddle per ride"><span id="statHours"><div class="n">16:03:20</div><div class="l">Hours Logged</div></span></div>
-    <div class="stat reveal" data-tip="Aug 22 night ride, longest yet"><div class="n" data-count="40.6" data-dec="1">0</div><div class="l">Longest (mi)</div></div>
+    <div class="stat reveal" data-tip="Longest single ride"><span id="statLongest"><div class="n" data-count="56.1" data-dec="1">0</div><div class="l">Longest (mi)</div></span></div>
     <div class="stat reveal" data-tip="Across all 244 miles"><span id="statAvg"><div class="n" data-count="15.2" data-dec="1">0</div><div class="l">Avg mph</div></span></div>
   </div>
   <div class="log reveal">
@@ -491,6 +506,7 @@
     </div>
   </div>
   </div>
+  <div class="track reveal" id="racetrack"></div>
   <div class="trainbar reveal" id="trainbar"></div>
   <div class="footer reveal">
     <div id="footerRange">Ride data verified via Strava + Stages sensors &middot; Aug 1&ndash;28, 2026</div>
@@ -551,7 +567,8 @@
 
   // Every visible challenge figure written from RIDE, so a ride is one edit.
   (function () {
-    var pct = RIDE.done / RIDE.goal * 100, togo = RIDE.goal - RIDE.done;
+    var pct = RIDE.done / RIDE.goal * 100;
+    var togo = Math.max(0, Math.round((RIDE.goal - RIDE.done) * 10) / 10);
     function set(id, v) { var el = document.getElementById(id); if (el) el.innerHTML = v; }
     var css = document.createElement('style');
     var w = Math.min(100, pct).toFixed(1);
@@ -568,6 +585,13 @@
     set('dtag', '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M13.2 2 4.6 13.6h5.7l-.9 8.4 8.6-11.6h-5.7l.9-8.4z"/></svg> ' +
       (togo > 0 ? 'Fuel the final ' + togo : 'Three hundred miles, done'));
     set('milesSoFar', Math.round(RIDE.done));
+    // longest ride comes from the session data, never typed by hand again
+    var lr = (HQ_LONGEST && HQ_LONGEST.R) || null;
+    if (lr) {
+      set('statLongest', '<div class="n" data-count="' + lr.mi + '" data-dec="1">0</div><div class="l">Longest (mi)</div>');
+      var lt = document.getElementById('statLongest');
+      if (lt) lt.parentNode.setAttribute('data-tip', lr.label);
+    }
     set('footerRange', 'Ride data verified via Strava + Stages sensors &middot; ' + RIDE.through);
   })();
 
@@ -1048,6 +1072,19 @@
 .tmeta span.go { color: #00e57c; border-color: rgba(0,229,124,.45); background: rgba(0,229,124,.12); }
 .pday { display: grid; grid-template-columns: 92px 1fr; gap: 14px; padding: 11px 0; border-top: 1px solid #171d2b; }
 .pday:first-child { border-top: 0; }
+.sim { border-color: #2b3550 !important; }
+.simlegs { display: grid; grid-template-columns: repeat(auto-fit,minmax(150px,1fr)); gap: 10px; margin-bottom: 12px; }
+.simleg { background: #0e121b; border: 1px solid #171d2b; border-left: 3px solid var(--sc); border-radius: 12px; padding: 12px 14px; }
+.simleg .sl { font-size: 9.5px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 900; color: var(--sc); }
+.simleg .sd { font-size: 19px; font-weight: 900; color: #f5f6f8; margin-top: 4px; font-variant-numeric: tabular-nums; }
+.simleg .st { font-size: 12px; color: #9aa3b8; margin-top: 3px; font-variant-numeric: tabular-nums; }
+.simtot { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; }
+.simtot div { flex: 1; min-width: 108px; background: #10141f; border: 1px solid #1e2536; border-radius: 10px; padding: 10px 12px; }
+.simtot .tk { font-size: 9px; letter-spacing: 1.2px; text-transform: uppercase; color: #5b6478; font-weight: 800; }
+.simtot .tv { font-size: 16px; font-weight: 900; color: #f5f6f8; margin-top: 2px; font-variant-numeric: tabular-nums; }
+.pweek { font-size: 10px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; color: #6d82ff; margin: 16px 0 4px; padding-top: 12px; border-top: 1px solid #1a2030; }
+.pday:first-of-type { border-top: 0; }
+.pday.past { opacity: .42; }
 .pday.now { background: linear-gradient(90deg, rgba(39,70,248,.14), transparent); margin: 0 -12px; padding: 11px 12px; border-radius: 10px; border-top-color: transparent; }
 .pday .pd { font-size: 11px; font-weight: 900; letter-spacing: 1.2px; text-transform: uppercase; color: #8a93ab; padding-top: 2px; }
 .pday.now .pd { color: #8fa1ff; }
@@ -1165,11 +1202,16 @@
 
   <div class="hq-sec active" id="sec-plan">
     <div class="hq-card today">
-      <h3>The run-in <span id="todayline" style="color:#5b6478;font-weight:700"></span></h3>
+      <h3>Taper to Santa Cruz <span id="todayline" style="color:#5b6478;font-weight:700"></span></h3>
       <div class="tmeta" id="tmeta"></div>
       <div id="plandays"></div>
       <div class="twhy" id="twhy"></div>
       <div class="twarn" id="twarn"></div>
+    </div>
+    <div class="hq-card sim"><h3>Race sim <span style="color:#5b6478;font-weight:700">&middot; Sun Aug 30, Pleasanton</span></h3>
+      <div class="simlegs" id="simlegs"></div>
+      <div class="simtot" id="simtot"></div>
+      <div class="hq-note" id="simnote"></div>
     </div>
     <div class="hq-card"><h3>The mission<span id="missiondays"></span></h3>
       <div class="hq-note">Ironman 70.3: 1.2 mi ocean swim, 56 mi bike, 13.1 mi run. The bike is trending, the run base is real, and the swim distance is done: 2,250 yd continuous on Aug 27 against 2,112 on race day. He is a certified diver, so open water is comfort, not fear. The final block is about holding race pace with the long rides layered on top.</div>
@@ -1477,6 +1519,27 @@
       }).catch(function(){});
   })();
 
+  // ---- race day tracker ----
+  (function () {
+    var box = document.getElementById('racetrack'); if (!box) return;
+    var days = Math.ceil((new Date('2026-09-13T00:00:00') - new Date()) / 86400000);
+    var when = days > 1 ? days + ' days out' : days === 1 ? 'Tomorrow' : days === 0 ? 'Today' : 'Raced';
+    box.innerHTML =
+      '<h2>Follow him on race day</h2>' +
+      '<div class="tname">Vaibhav Naidu</div>' +
+      '<div class="tcat">70.3 &middot; M25-29 &middot; 2026 IRONMAN 70.3 Santa Cruz</div>' +
+      '<div class="trow">' +
+      '<div><div class="k">Race day</div><div class="v">Sun, Sep 13</div></div>' +
+      '<div><div class="k">Status</div><div class="v">' + when + '</div></div>' +
+      '<div><div class="k">Swim start</div><div class="v">Main Beach</div></div>' +
+      '<div><div class="k">Distance</div><div class="v">70.3 mi</div></div>' +
+      '</div>' +
+      '<div class="how">Live splits appear in the <b>IRONMAN Tracker</b> app on race morning. ' +
+      'Search <b>Vaibhav Naidu</b> and turn on notifications to get a ping as he comes out of the water, ' +
+      'off the bike, and across the line.</div>';
+    box.classList.add('on');
+  })();
+
   // ---- public readiness strip on the main page ----
   (function(){
     var box = document.getElementById('trainbar');
@@ -1519,6 +1582,52 @@
     document.getElementById('readiness').innerHTML = rows;
   })();
 
+  // ---- race sim, Aug 30 ----
+  (function () {
+    var host = document.getElementById('simlegs'); if (!host) return;
+    var LEGS = [
+      { k:'S', c:'#38bdf8', n:'Swim',  d:'2,112 yd', t:'1:10:54', s:'open water, sighting and stops included' },
+      { k:'R', c:'#6d82ff', n:'Bike',  d:'56.1 mi',  t:'4:19:08', s:'13.0 mph' },
+      { k:'N', c:'#fc5200', n:'Run',   d:'6.0 mi',   t:'1:07:58', s:'11:17 /mi, straight off the bike' }
+    ];
+    host.innerHTML = LEGS.map(function (l) {
+      return '<div class="simleg" style="--sc:' + l.c + '"><div class="sl">' + l.n + '</div>' +
+        '<div class="sd">' + l.d + '</div><div class="st">' + l.t + '<br>' + l.s + '</div></div>';
+    }).join('');
+    // race day projection: hold the sim's own paces over the full distances
+    var swim = 2112 / 2112 * 4254;                 // swim distance was already race distance
+    var bike = 56 / 56.1 * 15548;
+    var run  = 13.1 / 6.0 * 4078;
+    var T = 600;
+    document.getElementById('simtot').innerHTML = [
+      ['Moving time', '4:24:47'],
+      ['On the clock', '6:10:31'],
+      ['Calories', '1,964'],
+      ['Projected 70.3', clock(swim + bike + run + T)]
+    ].map(function (t) {
+      return '<div><div class="tk">' + t[0] + '</div><div class="tv">' + t[1] + '</div></div>';
+    }).join('');
+    document.getElementById('simnote').innerHTML =
+      'The swim leg recorded 0:00 inside the multisport session, so its time comes from the separate tracked swim. ' +
+      'Bike distance is the watch reading of 56.14. The projection holds each of these paces over the full race ' +
+      'distances and adds ten minutes of transitions, so it assumes no fade across a longer day. Read it as a ceiling.';
+  })();
+
+  // Hand the first script what it needs about the sessions.
+  (function () {
+    var out = {};
+    ['S','R','N'].forEach(function (t) {
+      var st = stats(t);
+      if (st.longest) out[t] = { mi: pnum(st.longest.dist), label: st.longest.n, dist: st.longest.dist };
+    });
+    window.HQ_LONGEST = out;
+    var lr = out.R, tile = document.getElementById('statLongest');
+    if (lr && tile) {
+      tile.innerHTML = '<div class="n">' + lr.mi.toFixed(1) + '</div><div class="l">Longest (mi)</div>';
+      tile.parentNode.setAttribute('data-tip', lr.label);
+    }
+  })();
+
   // ---- course breakdown ----
   (function () {
     var host = document.getElementById('legs'); if (!host) return;
@@ -1538,22 +1647,23 @@
         '<path d="' + d + ' L300 54 L0 54 Z" fill="' + color + '" opacity=".16"/>' +
         '<path d="' + d + '" fill="none" stroke="' + color + '" stroke-width="2" stroke-linejoin="round"/></svg></div>';
     }
+    function best(t) { var st = stats(t); return st.longest ? st.longest.dist : '&mdash;'; }
     var LEGS = [
       { t:'S', c:'#38bdf8', name:'Swim', big:'1.2 mi', alt:'1.9 km / 2,112 yd',
         desc:'Pacific Ocean start off Santa Cruz Main Beach beside the Boardwalk, out around the wharf and back. Salt water, swell and sighting, not a pool.',
-        facts:[['Water','61 &deg;F'],['Wetsuit','Likely legal'],['Start','Main Beach'],['Your best','2,250 yd']],
+        facts:[['Water','61 &deg;F'],['Wetsuit','Likely legal'],['Start','Main Beach'],['Your best', best('S')]],
         prof:null,
-        verdict:'<span class="ok">Covered.</span> You swam <b>2,250 yd continuous</b> on Aug 27, past the 2,112 this asks. What is left is the difference between a pool and a bay: chop, salt, sighting and a wetsuit. That is what Saturday at the lake is for.' },
+        verdict:'<span class="ok">Done, twice over.</span> <b>2,250 yd continuous</b> in the pool on Aug 27, then the full <b>2,112 in open water</b> on Aug 30 in 1:10:54 with sighting and kayak faff included. Pool distance and open water are both signed off.' },
       { t:'R', c:'#6d82ff', name:'Bike', big:'56 mi', alt:'90.1 km',
         desc:'Out and back on Highway 1 along the coast. No single big climb, but continuous rolling with exposed sections where the westerly matters more than the gradient.',
-        facts:[['Climbing','2,400 to 3,000 ft'],['Terrain','Rolling'],['Shape','Out and back'],['Your longest','40.6 mi']],
+        facts:[['Climbing','2,400 to 3,000 ft'],['Terrain','Rolling'],['Shape','Out and back'],['Your longest', best('R')]],
         prof:[[0,10],[30,22],[60,14],[95,30],[130,18],[160,34],[195,20],[230,32],[265,16],[300,12]],
-        verdict:'<span class="flag">This is the gap.</span> The published course routes put the climbing between <b>2,400 and 3,000 ft</b>: the ZOOT route reads 2,468 over 56.0 mi, another reads 3,003 over 55.7. Your entire recorded bike climbing this year is <b>1,161 ft</b>, and 22 of your 23 rides logged zero. Whichever number is right, race day has more climbing in one ride than your whole season. Not a fitness problem at this point, a pacing one: rolling terrain punishes anyone who rides it like it is flat.' },
+        verdict:'<span class="ok">Distance covered on Aug 30</b>:</span> <b>56.1 mi in 4:19:08</b> at 13.0 mph. What is still untested is the terrain. Published routes put the climbing between <b>2,400 and 3,000 ft</b> and your recorded climbing all year is <b>1,161 ft</b>, nearly all of it in one ride. Race day has more climbing in one go than your whole season, so the risk is pacing, not endurance: rolling ground punishes anyone who rides it like it is flat.' },
       { t:'N', c:'#fc5200', name:'Run', big:'13.1 mi', alt:'21.4 km',
         desc:'Parks and coastal bluffs, finishing on the beach. Billed as flat and mostly is, with enough bluff rollers to notice on tired legs.',
-        facts:[['Climbing','About 660 ft'],['Terrain','Flat to rolling'],['Finish','Beach'],['Your longest','13.1 mi']],
+        facts:[['Climbing','About 660 ft'],['Terrain','Flat to rolling'],['Finish','Beach'],['Your longest', best('N')]],
         prof:[[0,16],[40,20],[80,15],[120,24],[160,17],[200,26],[240,18],[300,22]],
-        verdict:'<span class="ok">Distance is proven</span> at 13.1 in June, and your runs already carry <b>2,772 ft</b> of climbing, so the bluffs are not new. The open question is not the run, it is the run after 56 miles. Sunday is the only session that answers it.' }
+        verdict:'<span class="ok">Answered.</span> Distance proven at 13.1 in June, and on Aug 30 you ran <b>6.0 mi at 11:17/mi straight off the 56</b>. That was the open question and it is closed. Holding that pace to 13.1 on tired legs is the remaining unknown, and that is what race day is for.' }
     ];
     host.innerHTML = LEGS.map(function (l) {
       return '<div class="leg" style="--lc:' + l.c + '">' +
@@ -1646,8 +1756,11 @@
     var days = Math.ceil((new Date('2026-09-13T00:00:00') - now) / 86400000);
     var left = Math.ceil((new Date('2026-09-01T00:00:00') - now) / 86400000);
     var togo = (window.MILES_GOAL || 300) - (window.MILES_DONE || 0);
-    var togo = (window.MILES_GOAL || 300) - (window.MILES_DONE || 0);
-    el.textContent = '\u00b7 ' + togo + ' miles left, deadline Aug 31';
+    var raw = (window.MILES_GOAL || 300) - (window.MILES_DONE || 0);
+    var togo = Math.max(0, Math.round(raw * 10) / 10);   // 300 - 300.1 is not -0.1000000002
+    el.textContent = togo > 0
+      ? '\u00b7 ' + togo + ' miles left, deadline Aug 31'
+      : '\u00b7 300 done \u00b7 ' + days + ' days to Santa Cruz';
     var md = document.getElementById('missiondays');
     if (md) md.textContent = ': ' + days + ' days to Santa Cruz';
 
@@ -1656,55 +1769,77 @@
     document.getElementById('tmeta').innerHTML =
       '<span class="go">' + wk.toFixed(1) + 'h last 7 days</span>' +
       '<span>' + cnt + ' sessions</span>' +
-      '<span class="hot">' + togo + ' mi in ' + left + ' days</span>' +
-      '<span>' + days + ' days to race</span>';
+      (togo > 0
+        ? '<span class="hot">' + togo + ' mi in ' + left + ' days</span>'
+        : '<span class="go">300 of 300 done</span>') +
+      '<span class="hot">' + days + ' days to race</span>';
 
     var PLAN = [
-      { d: '2026-08-28', label: 'Fri', sub: 'Aug 28',
-        html: '<b>Z2 ride, 25 to 30.</b> Volume, not intensity. Optional easy swim after. <em>Nothing hard: Sunday is the session that matters.</em>' },
-      { d: '2026-08-29', label: 'Sat', sub: 'Aug 29',
-        html: '<b>Off, or 20 minutes easy in the pool.</b> <em>Not an easy ten. Off. This is the day that makes Sunday possible.</em>' },
-      { d: '2026-08-30', label: 'Sun', sub: 'Aug 30', key: true,
-        html: '<b>Race sim: 56 on the bike, then 3 to 4 straight off it.</b> Ride at conversation pace, eat and drink on the bike the way you would on race day. <em>This closes the challenge and takes bike readiness from 73 to 100 in one session.</em>' },
-      { d: '2026-08-31', label: 'Mon', sub: 'Aug 31',
-        html: '<b>Whatever is left to reach 300.</b> <em>Buffer day. If Sunday goes to plan there is nothing to do here but finish.</em>' }
+      { d:'2026-08-31', label:'Mon', sub:'Aug 31', week:'Week 1  \u00b7  absorb the sim',
+        html:'<b>Nothing, or 20 minutes spinning the legs out.</b> <em>You rode 56 and ran 6 off it yesterday. Today is not a training day.</em>' },
+      { d:'2026-09-01', label:'Tue', sub:'Sep 1',
+        html:'<b>Swim 1,200 easy, technique only.</b> <em>Loosen the shoulders. No intervals.</em>' },
+      { d:'2026-09-02', label:'Wed', sub:'Sep 2',
+        html:'<b>Bike 25 Z2, then 15 minutes running off it.</b> <em>Short brick. Keeps the transition familiar without costing anything.</em>' },
+      { d:'2026-09-03', label:'Thu', sub:'Sep 3',
+        html:'<b>Swim 1,500 with 4 x 100 at race effort. Easy 3 mi run.</b> <em>First touch of race pace all week.</em>' },
+      { d:'2026-09-04', label:'Fri', sub:'Sep 4',
+        html:'<b>Rest.</b> <em>Or 30 minutes spinning if you are restless. Nothing more.</em>' },
+      { d:'2026-09-05', label:'Sat', sub:'Sep 5', key:true,
+        html:'<b>Bike 30 with 4 x 5 min at race effort, then 2 mi off the bike.</b> <em>Wear the tri suit and the Pegasus. This is their audition, not race day.</em>' },
+      { d:'2026-09-06', label:'Sun', sub:'Sep 6',
+        html:'<b>Open water 1,500 in the wetsuit. Easy 4 mi later.</b> <em>Last open water before the bay. Practise sighting off a landmark.</em>' },
+      { d:'2026-09-07', label:'Mon', sub:'Sep 7', week:'Week 2  \u00b7  taper, do less than you want to',
+        html:'<b>Rest.</b> <em>The work is done. From here you are protecting it.</em>' },
+      { d:'2026-09-08', label:'Tue', sub:'Sep 8',
+        html:'<b>Bike 45 min easy with 3 x 3 min at race effort. Swim 1,000 easy.</b> <em>Short and sharp. Legs stay awake, nothing gets tired.</em>' },
+      { d:'2026-09-09', label:'Wed', sub:'Sep 9',
+        html:'<b>Run 30 min easy with 4 x 1 min pickups.</b> <em>Last run with any pace in it.</em>' },
+      { d:'2026-09-10', label:'Thu', sub:'Sep 10',
+        html:'<b>Swim 1,000 with a few race pace lengths. Spin 30 min.</b> <em>Then start packing. Lay everything out.</em>' },
+      { d:'2026-09-11', label:'Fri', sub:'Sep 11',
+        html:'<b>Rest. Travel. Bike checked over.</b> <em>Tyres, brakes, bottle cages, spare tube. Eat normally, drink more than usual.</em>' },
+      { d:'2026-09-12', label:'Sat', sub:'Sep 12',
+        html:'<b>20 min spin and 10 min jog, both absurdly easy. Check in, rack the bike.</b> <em>Early night. Nothing today makes you faster; plenty could make you slower.</em>' },
+      { d:'2026-09-13', label:'Sun', sub:'Sep 13', key:true,
+        html:'<b>Race day.</b> Swim steady off the feet in front. Bike at conversation pace and eat every 30 minutes. Run the first 3 slower than feels right. <em>Goal one: the cutoff. Goal two: the finish line (ER or PR ;)</em>' }
     ];
     var todayStr = new Date(now.getTime() - now.getTimezoneOffset()*60000).toISOString().slice(0,10);
     // Once the block is behind us the day by day plan is noise, so it retires
     // itself and the card carries the state instead.
     if (todayStr > PLAN[PLAN.length - 1].d) {
       document.getElementById('plandays').innerHTML =
-        '<div class="pday"><div class="pd">Done<small>Aug 31</small></div><div class="pv">' +
-        (RIDE.done >= RIDE.goal
-          ? '<b>300 miles, closed out.</b> <em>The challenge is finished. What is left is the race.</em>'
-          : '<b>The August block is over at ' + RIDE.done + ' miles.</b> <em>Focus shifts entirely to Sep 13.</em>') +
+        '<div class="pday"><div class="pd">Raced<small>Sep 13</small></div><div class="pv">' +
+        '<b>Santa Cruz is behind you.</b> <em>Three hundred miles for ACS and a 70.3 in the same month.</em>' +
         '</div></div>';
       var h = document.getElementById('todayline');
       if (h) h.textContent = '\u00b7 ' + days + ' days to Santa Cruz';
       return;
     }
     document.getElementById('plandays').innerHTML = PLAN.map(function (r) {
-      var cls = 'pday' + (r.key ? ' key' : '') + (r.d === todayStr ? ' now' : '');
-      return '<div class="' + cls + '"><div class="pd">' + r.label +
+      var cls = 'pday' + (r.key ? ' key' : '') + (r.d === todayStr ? ' now' : '') +
+        (r.d < todayStr ? ' past' : '');
+      return (r.week ? '<div class="pweek">' + r.week + '</div>' : '') +
+        '<div class="' + cls + '"><div class="pd">' + r.label +
         '<small>' + r.sub + (r.d === todayStr ? ' \u00b7 today' : '') + '</small></div>' +
         '<div class="pv">' + r.html + '</div></div>';
     }).join('');
 
     document.getElementById('twhy').innerHTML =
-      '<b>The arithmetic.</b> ' + togo + ' miles left over ' + left + ' days. Friday at 28 plus Sunday at 56 is exactly ' +
-      'the ' + togo + ' you need, which leaves Saturday free to be useless on purpose and Monday as a buffer. ' +
-      'That only works if Saturday is genuinely off.' +
-      '<br><br><b>What Sunday costs you.</b> Putting the sim on Sunday instead of Saturday removes your fallback. ' +
-      'If Sunday goes wrong, mechanical or weather or a bad stomach, you are closing the gap on Monday alone against ' +
-      'a deadline that does not move. Saturday would keep Sunday in reserve. You know the tradeoff; it is a real one.' +
-      '<br><br><b>What is already banked.</b> Swim is done at 2,250 continuous against 2,112 on race day. ' +
-      'Thursday\u2019s 4 miles was your longest run of August and nearly doubled the month\u2019s run volume. ' +
-      'The bike long ride is the only readiness number still short, and it moves only on a ride past 40.6.';
+      '<b>The shape of it.</b> Week one takes the sim out of your legs and puts one quality session back in on ' +
+      'Saturday. Week two is taper: short, frequent, and less than you will want to do. Fitness gained in the last ' +
+      'fourteen days is negligible. Freshness lost is not.' +
+      '<br><br><b>Nothing new after Sep 5.</b> The tri suit and the Pegasus get their test on Saturday and then they ' +
+      'are either in or out. No new shoes, no new nutrition, no new saddle position in the final week. Most race day ' +
+      'disasters started as something tried for the first time that morning.' +
+      '<br><br><b>The one thing still untested.</b> Your recorded bike climbing all year is 1,161 ft. The course has ' +
+      'somewhere between 2,400 and 3,000. Saturday the 5th is the last useful day to ride something with hills in it, ' +
+      'and that lake return you skipped, roughly 2,000 ft, is the right size and finally the right week for it.';
 
     document.getElementById('twarn').innerHTML =
-      '<b>The Pegasus 42s:</b> Thursday\u2019s 4 miles was a longer first outing than ideal. Check for hot spots on ' +
-      'the next short run before you trust them, and do not put them on for Sunday\u2019s run off the bike. ' +
-      'That run is the one place you want zero variables.';
+      '<b>The trap in the next fortnight is doing too much, not too little.</b> You are fit. The sim proved it. ' +
+      'Every extra session from here is a withdrawal, not a deposit. If a day says rest and you feel great, that is ' +
+      'the taper working, not a sign you should ride.';
   })();
 
   // ---- weekly volume, built from the session dates ----
