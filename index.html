@@ -585,13 +585,6 @@
     set('dtag', '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M13.2 2 4.6 13.6h5.7l-.9 8.4 8.6-11.6h-5.7l.9-8.4z"/></svg> ' +
       (togo > 0 ? 'Fuel the final ' + togo : 'Three hundred miles, done'));
     set('milesSoFar', Math.round(RIDE.done));
-    // longest ride comes from the session data, never typed by hand again
-    var lr = (HQ_LONGEST && HQ_LONGEST.R) || null;
-    if (lr) {
-      set('statLongest', '<div class="n" data-count="' + lr.mi + '" data-dec="1">0</div><div class="l">Longest (mi)</div>');
-      var lt = document.getElementById('statLongest');
-      if (lt) lt.parentNode.setAttribute('data-tip', lr.label);
-    }
     set('footerRange', 'Ride data verified via Strava + Stages sensors &middot; ' + RIDE.through);
   })();
 
@@ -1107,6 +1100,26 @@
 .twarn b { color: #ff8e9e; }
 @media (max-width: 640px) { .tsess { grid-template-columns: 1fr; gap: 4px 0; } .tsess dt { padding-top: 10px; } }
 
+.cut { display: grid; grid-template-columns: repeat(auto-fit,minmax(140px,1fr)); gap: 10px; }
+.cut div { background: #0e121b; border: 1px solid #171d2b; border-radius: 12px; padding: 12px 14px; }
+.cut .ck { font-size: 9.5px; letter-spacing: 1.2px; text-transform: uppercase; color: #5b6478; font-weight: 800; }
+.cut .cv { font-size: 20px; font-weight: 900; color: #f5f6f8; margin-top: 3px; font-variant-numeric: tabular-nums; }
+.cut .cs { font-size: 10.5px; color: #6b7489; margin-top: 3px; line-height: 1.45; }
+.pace { border-left: 3px solid var(--pc); background: #0e121b; border-radius: 12px; padding: 13px 15px; margin-bottom: 10px; }
+.pace .ph { font-size: 11px; font-weight: 900; letter-spacing: 1.8px; text-transform: uppercase; color: var(--pc); margin-bottom: 5px; }
+.pace .pb { font-size: 13.5px; color: #d7dcea; line-height: 1.6; }
+.pace .pb b { color: #fff; }
+.pace .pb em { font-style: normal; color: #8a93ab; }
+.ftab { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.ftab th { text-align: left; font-size: 9.5px; letter-spacing: 1.2px; text-transform: uppercase; color: #5b6478; font-weight: 800; padding: 0 8px 7px 0; }
+.ftab td { padding: 8px 8px 8px 0; border-top: 1px solid #171d2b; color: #9aa3b8; vertical-align: top; }
+.ftab td:first-child { color: #e7eaf2; font-weight: 700; white-space: nowrap; }
+.ftab td b { color: #f5f6f8; }
+.intel { display: grid; gap: 9px; }
+.intel div { background: #0e121b; border: 1px solid #171d2b; border-radius: 11px; padding: 11px 14px; font-size: 12.5px; color: #9aa3b8; line-height: 1.6; }
+.intel div b { color: #e7eaf2; }
+.intel div.warn { border-color: rgba(255,90,112,.4); background: rgba(255,90,112,.08); }
+.intel div.warn b { color: #ff8e9e; }
 .cond { display: grid; grid-template-columns: repeat(auto-fit,minmax(120px,1fr)); gap: 10px; }
 .cond div { background: #0e121b; border: 1px solid #171d2b; border-radius: 12px; padding: 11px 13px; }
 .cond .ck { font-size: 9.5px; letter-spacing: 1.2px; text-transform: uppercase; color: #5b6478; font-weight: 800; }
@@ -1197,6 +1210,7 @@
     <button class="hq-tab" data-sec="cal">Calendar</button>
     <button class="hq-tab" data-sec="an">Analysis</button>
     <button class="hq-tab" data-sec="course">Course</button>
+    <button class="hq-tab" data-sec="raceday">Race Day</button>
     <button class="hq-tab" data-sec="zones">Zones</button>
   </div>
 
@@ -1282,6 +1296,15 @@
     </div>
     <div id="legs"></div>
     <div class="hq-card"><h3>Sources</h3><div class="hq-note" id="srcnote"></div></div>
+  </div>
+  <div class="hq-sec" id="sec-raceday">
+    <div class="hq-card"><h3>The clock <span style="color:#5b6478;font-weight:700">&middot; all timed from your own rolling start</span></h3>
+      <div class="cut" id="cutoffs"></div>
+      <div class="hq-note" style="margin-top:12px">The bike cutoff is <b>cumulative</b>: swim plus T1 plus bike. A slow swim eats bike time. Bike Aid Station 3 closes at 1:00 PM regardless.</div>
+    </div>
+    <div class="hq-card"><h3>Pacing</h3><div id="pacing"></div></div>
+    <div class="hq-card"><h3>Fuel <span style="color:#5b6478;font-weight:700">&middot; sized for 57 kg, not a 75 kg athlete</span></h3><div id="fuel"></div></div>
+    <div class="hq-card"><h3>What the course does to people</h3><div id="intel"></div></div>
   </div>
   <div class="hq-sec" id="sec-zones">
     <div class="hq-card"><h3>Heart rate zones &middot; max estimated from age</h3><div class="zone-row" style="--c:210;--d:0.0s;--sw:238px"><span class="zl">Z1</span><span class="zone-track"><i class="zone-bar" style="--w:34%"></i><span class="zone-name">Recovery</span><span class="zone-val">under 127 bpm</span></span></div><div class="zone-row" style="--c:200;--d:0.05s;--sw:336px"><span class="zl">Z2</span><span class="zone-track"><i class="zone-bar" style="--w:48%"></i><span class="zone-name">Endurance</span><span class="zone-val">127-157 bpm</span></span></div><div class="zone-row" style="--c:45;--d:0.1s;--sw:434px"><span class="zl">Z3</span><span class="zone-track"><i class="zone-bar" style="--w:62%"></i><span class="zone-name">Tempo</span><span class="zone-val">158-173 bpm</span></span></div><div class="zone-row" style="--c:25;--d:0.15s;--sw:546px"><span class="zl">Z4</span><span class="zone-track"><i class="zone-bar" style="--w:78%"></i><span class="zone-name">Threshold</span><span class="zone-val">174-188 bpm</span></span></div><div class="zone-row" style="--c:0;--d:0.2s;--sw:658px"><span class="zl">Z5</span><span class="zone-track"><i class="zone-bar" style="--w:94%"></i><span class="zone-name">Max</span><span class="zone-val">189+ bpm</span></span></div></div>
@@ -1610,7 +1633,8 @@
     document.getElementById('simnote').innerHTML =
       'The swim leg recorded 0:00 inside the multisport session, so its time comes from the separate tracked swim. ' +
       'Bike distance is the watch reading of 56.14. The projection holds each of these paces over the full race ' +
-      'distances and adds ten minutes of transitions, so it assumes no fade across a longer day. Read it as a ceiling.';
+      'distances and adds ten minutes of transitions, so it assumes no fade across a longer day. Read it as a ceiling.' +
+      '<br><br><b>Treat the 13.0 mph as unusable.</b> That ride came two days after a 2:55 Z2 effort, on a commercial street stopping for a light every ten to fifteen minutes, and the pause button was pressed for some of those stops and forgotten for others. So the 4:19:08 is neither moving time nor elapsed time, and the average speed it produces corresponds to no real riding. The honest reading is that the true number is <b>higher</b> than 13.0, by an unknown amount. Sep 5 exists to replace it.';
   })();
 
   // Hand the first script what it needs about the sessions.
@@ -1621,9 +1645,15 @@
       if (st.longest) out[t] = { mi: pnum(st.longest.dist), label: st.longest.n, dist: st.longest.dist };
     });
     window.HQ_LONGEST = out;
+    // The tile is authored with the current figure so it can animate on reveal.
+    // Only rewrite it when the session data has moved past what is in the markup,
+    // otherwise we would clobber a counter that is mid flight.
     var lr = out.R, tile = document.getElementById('statLongest');
     if (lr && tile) {
-      tile.innerHTML = '<div class="n">' + lr.mi.toFixed(1) + '</div><div class="l">Longest (mi)</div>';
+      var cur = tile.querySelector('[data-count]');
+      if (!cur || Math.abs(parseFloat(cur.getAttribute('data-count')) - lr.mi) > 0.05) {
+        tile.innerHTML = '<div class="n">' + lr.mi.toFixed(1) + '</div><div class="l">Longest (mi)</div>';
+      }
       tile.parentNode.setAttribute('data-tip', lr.label);
     }
   })();
@@ -1681,6 +1711,52 @@
       'range from 2,468 to 3,003 ft, so the range is shown rather than a single invented number. ' +
       'Sources are public route files and athlete reports, not the official athlete guide. ' +
       'Send the guide and these get replaced with exact figures.';
+  })();
+
+  // ---- race day briefing ----
+  (function () {
+    var cut = document.getElementById('cutoffs'); if (!cut) return;
+    cut.innerHTML = [
+      ['Swim', '1:10', '1.2 mi. Your open water sim was 1:10:54 with stops and kayak faff. Pool pace says 56 min.'],
+      ['Bike', '5:30', 'Cumulative: swim + T1 + bike. This is the one to respect.'],
+      ['Finish', '8:30', 'Everything. Athletes have come in at 8:26 and counted it a win.'],
+      ['At T2', 'Do the maths', 'Note the clock leaving T2. Subtract from 8:30. Divide by 13.1. That is your run budget.']
+    ].map(function (c) {
+      return '<div><div class="ck">' + c[0] + '</div><div class="cv">' + c[1] + '</div><div class="cs">' + c[2] + '</div></div>';
+    }).join('');
+
+    document.getElementById('pacing').innerHTML = [
+      { c:'#38bdf8', h:'Swim', b:'<b>RPE 5 out of 10 for the first 400m.</b> Start wide and toward the back. Before the gun, get in and bob: face in the water, exhale slowly, 1 to 2 minutes. That pre-triggers the dive reflex so it does not ambush you at 100m. <em>If panic comes anyway, roll onto your back and breathe. You may hold a kayak without advancing. It costs 60 seconds against a 70 minute budget.</em>' },
+      { c:'#6d82ff', h:'Bike', b:'<b>Conversational. Full sentences out loud, not four words.</b> If you have heart rate, cap it 8 to 10 bpm under threshold. RPE 4 out of 10. Keep the effort even rather than surging: the mile 15 climb is the hardest part of the course and there is a turnout three quarters up if you want it. <em>Overbiking is the single most common way a first 70.3 goes wrong, and it shows up two hours later as a wrecked run.</em>' },
+      { c:'#fc5200', h:'Run', b:'<b>Thirteen years of running is your asset here. Use it by starting slow.</b> First mile 30 to 45 seconds slower than target, then settle. Ignore whatever your legs report for the first 15 minutes; they lie in both directions. <em>Walk every aid station for 20 to 30 seconds and actually drink. If the day turns, 4 min run to 1 min walk holds pace better than running until you break.</em>' }
+    ].map(function (p) {
+      return '<div class="pace" style="--pc:' + p.c + '"><div class="ph">' + p.h + '</div><div class="pb">' + p.b + '</div></div>';
+    }).join('');
+
+    document.getElementById('fuel').innerHTML =
+      '<table class="ftab"><tr><th>When</th><th>What</th></tr>' +
+      [['Sep 11 to 12','<b>455 to 570 g carbs a day</b>, low fat and low fibre. Most of it before 6pm. Expect to gain 1 to 2 kg of water with the glycogen. That is fuel, not fat.'],
+       ['Race morning','<b>90 to 115 g carbs</b> with 10 to 15 g protein, 2.5 to 3 hours before your start. About 950 ml of fluid with it, and at least 1000 mg of sodium.'],
+       ['15 min before','One gel or a carb drink.'],
+       ['Bike','<b>60 to 80 g carbs an hour</b>, 500 to 750 ml fluid, 500 to 800 mg sodium. Start inside the first 15 minutes. Liquid only for the last 20 minutes.'],
+       ['Run','<b>45 to 60 g carbs an hour</b>, taken as 20 to 30 g every 20 to 30 minutes. Absorption drops once you are upright and jostling.'],
+       ['Caffeine','171 to 342 mg an hour before, if you use it. Nothing you have not used before.']
+      ].map(function(r){ return '<tr><td>'+r[0]+'</td><td>'+r[1]+'</td></tr>'; }).join('') + '</table>' +
+      '<div class="intel" style="margin-top:12px"><div class="warn"><b>The one genuine danger:</b> you are in the elevated hyponatremia group. Small athlete, long day, an aid station every mile. Overdrinking plain water is the cause, and the symptoms read exactly like dehydration so the instinct makes it worse. <b>Drink to thirst, but drink something with sodium in it.</b> Finishing 2 to 4 lb down is correct. Same weight or heavier means you drank too much.</div></div>';
+
+    document.getElementById('intel').innerHTML = '<div class="intel">' + [
+      ['<b>The wind is on a clock.</b> It runs north to south and builds from around 10 to 11am. Outbound on Highway 1 is into it; the return is tailwind and downhill. Riders who are out early get the easy half first.', 0],
+      ['<b>Mile 15 is the hardest climb on the course</b>, and the hills are asymmetric: a long climb out at 15 to 20 becomes a long descent home at 35 to 40. Do not spend yourself on the way up.', 0],
+      ['<b>Swells appear once you clear the end of the pier.</b> From the beach the water looks flat. Visibility is near zero, so sight often and expect kelp to appear suddenly.', 0],
+      ['<b>Sea lions, not sharks, are the local concern</b>, and they are territorial at the pier end. Locals who swim there year round dismiss the shark question entirely.', 0],
+      ['<b>Do not swallow the water.</b> Cowells beach at the swim exit has a water quality history. At least one 2024 finisher ended up in the ER for it, though most racers that year were fine.', 1],
+      ['<b>T1 is a 0.3 to 0.4 mile barefoot run</b>, one of the longest on the circuit. The transition turf sheds rubber crumb that sticks to wet feet and causes blisters. Rinse pools are provided; bring a towel and actually dry off.', 1],
+      ['<b>The run is not flat, whatever the course description says.</b> Awkward ups and downs, and a rutted off camber dirt section that costs more energy than it looks. Multiple Garmins have measured it at 13.4 to 13.5 miles.', 0],
+      ['<b>The only bathroom on the run is at Wilder Ranch.</b> Plan accordingly.', 0],
+      ['<b>No wetsuit strippers and no special needs bags at this race.</b> You peel your own suit on the T1 jog.', 0],
+      ['<b>Fog can change the race.</b> In 2017 the swim was delayed over an hour and shortened. The published contingency runs all the way to replacing the swim with a short run. Turn up expecting the plan to hold and be unbothered if it does not.', 0],
+      ['<b>Do not make Saturday your first ocean swim.</b> Athletes who tried that reported it raised nerves rather than settling them. Short mock starts without the wetsuit work better.', 1]
+    ].map(function (x) { return '<div class="' + (x[1] ? 'warn' : '') + '">' + x[0] + '</div>'; }).join('') + '</div>';
   })();
 
   // ---- calendar day popup ----
@@ -1775,34 +1851,34 @@
       '<span class="hot">' + days + ' days to race</span>';
 
     var PLAN = [
-      { d:'2026-08-31', label:'Mon', sub:'Aug 31', week:'Week 1  \u00b7  absorb the sim',
+      { d:'2026-08-31', label:'Mon', sub:'Aug 31', week:'Week 1  \u00b7  one more block of real work',
         html:'<b>Nothing, or 20 minutes spinning the legs out.</b> <em>You rode 56 and ran 6 off it yesterday. Today is not a training day.</em>' },
       { d:'2026-09-01', label:'Tue', sub:'Sep 1',
-        html:'<b>Swim 1,200 easy, technique only.</b> <em>Loosen the shoulders. No intervals.</em>' },
+        html:'<b>Swim 1,500: 400 easy, then 8 x 100 at race effort off 20 seconds rest, 300 easy.</b> <em>Your sim swim was 1:10:54 with kayak trouble and directions. The pool says you are quicker than that. This is where you find out.</em>' },
       { d:'2026-09-02', label:'Wed', sub:'Sep 2',
-        html:'<b>Bike 25 Z2, then 15 minutes running off it.</b> <em>Short brick. Keeps the transition familiar without costing anything.</em>' },
+        html:'<b>Bike 25 Z2, then 15 minutes running straight off it.</b> <em>Short brick. Keeps the transition familiar without costing anything.</em>' },
       { d:'2026-09-03', label:'Thu', sub:'Sep 3',
-        html:'<b>Swim 1,500 with 4 x 100 at race effort. Easy 3 mi run.</b> <em>First touch of race pace all week.</em>' },
+        html:'<b>Run 5 with the middle 3 at half marathon effort.</b> <em>Thirteen years of running is the strongest thing you bring to this race. One honest session to remind the legs.</em>' },
       { d:'2026-09-04', label:'Fri', sub:'Sep 4',
         html:'<b>Rest.</b> <em>Or 30 minutes spinning if you are restless. Nothing more.</em>' },
       { d:'2026-09-05', label:'Sat', sub:'Sep 5', key:true,
-        html:'<b>Bike 30 with 4 x 5 min at race effort, then 2 mi off the bike.</b> <em>Wear the tri suit and the Pegasus. This is their audition, not race day.</em>' },
+        html:'<b>Bike 35 to 40 on a route with no traffic lights. Do not touch the pause button. Then 2 mi off the bike.</b> <em>Every bike number on this page traces back to rides through stop and go traffic, so none of them predict race day. Find a bike path or a loop, take the elapsed time start to finish, and get some climbing in it. That single number sets your race pacing. Full kit: tri suit, Pegasus, race nutrition.</em>' },
       { d:'2026-09-06', label:'Sun', sub:'Sep 6',
-        html:'<b>Open water 1,500 in the wetsuit. Easy 4 mi later.</b> <em>Last open water before the bay. Practise sighting off a landmark.</em>' },
-      { d:'2026-09-07', label:'Mon', sub:'Sep 7', week:'Week 2  \u00b7  taper, do less than you want to',
+        html:'<b>Open water 1,500 in the wetsuit. Easy 4 mi later.</b> <em>Practise sighting off a fixed landmark and swimming blind: Santa Cruz has near zero visibility. Last open water before the bay.</em>' },
+      { d:'2026-09-07', label:'Mon', sub:'Sep 7', week:'Week 2  \u00b7  taper &mdash; half the volume, all of the intensity',
         html:'<b>Rest.</b> <em>The work is done. From here you are protecting it.</em>' },
       { d:'2026-09-08', label:'Tue', sub:'Sep 8',
-        html:'<b>Bike 45 min easy with 3 x 3 min at race effort. Swim 1,000 easy.</b> <em>Short and sharp. Legs stay awake, nothing gets tired.</em>' },
+        html:'<b>Bike 45 min easy with 3 x 5 min at race effort. Swim 1,000 easy.</b> <em>Short and sharp. Legs stay awake, nothing gets tired.</em>' },
       { d:'2026-09-09', label:'Wed', sub:'Sep 9',
-        html:'<b>Run 30 min easy with 4 x 1 min pickups.</b> <em>Last run with any pace in it.</em>' },
+        html:'<b>Run 4 easy with 6 x 1 min at 10k effort.</b> <em>Volume drops, speed does not. That distinction is the whole taper.</em>' },
       { d:'2026-09-10', label:'Thu', sub:'Sep 10',
-        html:'<b>Swim 1,000 with a few race pace lengths. Spin 30 min.</b> <em>Then start packing. Lay everything out.</em>' },
+        html:'<b>Swim 1,200 with 6 x 50 fast. Spin 30 min.</b> <em>Then lay every piece of kit on the floor and photograph it.</em>' },
       { d:'2026-09-11', label:'Fri', sub:'Sep 11',
-        html:'<b>Rest. Travel. Bike checked over.</b> <em>Tyres, brakes, bottle cages, spare tube. Eat normally, drink more than usual.</em>' },
+        html:'<b>Bike 30 min with 3 x 2 min at race effort. Travel. Bike checked over.</b> <em>Carb loading starts today: roughly 500 g a day, low fat and low fibre, most of it before 6pm. You will gain a kilo or two of water. That is stored fuel, not weight.</em>' },
       { d:'2026-09-12', label:'Sat', sub:'Sep 12',
-        html:'<b>20 min spin and 10 min jog, both absurdly easy. Check in, rack the bike.</b> <em>Early night. Nothing today makes you faster; plenty could make you slower.</em>' },
+        html:'<b>20 min spin with 3 x 1 min, 10 min jog with 4 x 20 sec strides. Check in and rack the bike.</b> <em>Get in the water for a few short mock starts <b>without</b> the wetsuit, just long enough to take the cold shock away. Athletes who make Saturday their first proper ocean swim report it winds them up rather than settling them. Early night.</em>' },
       { d:'2026-09-13', label:'Sun', sub:'Sep 13', key:true,
-        html:'<b>Race day.</b> Swim steady off the feet in front. Bike at conversation pace and eat every 30 minutes. Run the first 3 slower than feels right. <em>Goal one: the cutoff. Goal two: the finish line (ER or PR ;)</em>' }
+        html:'<b>Race day.</b> Bob and breathe in the water before the gun. Bike in full sentences and eat every 30 minutes. Run the first mile slower than feels right. <em>Goal one: the cutoff. Goal two: the finish line (ER or PR ;)</em>' }
     ];
     var todayStr = new Date(now.getTime() - now.getTimezoneOffset()*60000).toISOString().slice(0,10);
     // Once the block is behind us the day by day plan is noise, so it retires
@@ -1826,15 +1902,21 @@
     }).join('');
 
     document.getElementById('twhy').innerHTML =
-      '<b>The shape of it.</b> Week one takes the sim out of your legs and puts one quality session back in on ' +
-      'Saturday. Week two is taper: short, frequent, and less than you will want to do. Fitness gained in the last ' +
-      'fourteen days is negligible. Freshness lost is not.' +
-      '<br><br><b>Nothing new after Sep 5.</b> The tri suit and the Pegasus get their test on Saturday and then they ' +
-      'are either in or out. No new shoes, no new nutrition, no new saddle position in the final week. Most race day ' +
-      'disasters started as something tried for the first time that morning.' +
-      '<br><br><b>The one thing still untested.</b> Your recorded bike climbing all year is 1,161 ft. The course has ' +
-      'somewhere between 2,400 and 3,000. Saturday the 5th is the last useful day to ride something with hills in it, ' +
-      'and that lake return you skipped, roughly 2,000 ft, is the right size and finally the right week for it.';
+      '<b>Half the volume, all of the intensity.</b> That is the whole taper, and the second half is the part ' +
+      'people get wrong. The meta analysis on this is unambiguous: cut training volume by roughly half over two ' +
+      'weeks but hold the intensity and the frequency, and performance improves about 3 percent. Taper by going ' +
+      'easy instead, and the benefit disappears entirely. So there is a short, sharp effort in almost every ' +
+      'session right through to the day before the race. They are deliberately too small to tire you.' +
+      '<br><br><b>Saturday the 5th is the most important day on this list.</b> Every bike figure you have was ' +
+      'ridden through traffic lights, and you paused for some of them and forgot others, so the 13.0 mph from the ' +
+      'sim describes nothing real. One ride on a route with no stops, timed start to finish, gives you the only ' +
+      'honest number you own. Everything about race day pacing gets set from it.' +
+      '<br><br><b>Nothing new after Sep 5.</b> The tri suit and the Pegasus get their audition Saturday and are ' +
+      'then either in or out. No new shoes, no new nutrition, no new saddle position in the final week. Most race ' +
+      'day disasters started as something tried for the first time that morning.' +
+      '<br><br><b>The gap that is still open.</b> Your recorded bike climbing all year is 1,161 ft. The course has ' +
+      'somewhere between 2,400 and 3,000, and the hardest of it arrives at mile 15. Put hills in Saturday\'s ride; ' +
+      'that lake return you skipped, roughly 2,000 ft, is the right size and finally the right week for it.';
 
     document.getElementById('twarn').innerHTML =
       '<b>The trap in the next fortnight is doing too much, not too little.</b> You are fit. The sim proved it. ' +
