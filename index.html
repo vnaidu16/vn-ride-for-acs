@@ -41,8 +41,55 @@
       linear-gradient(100deg, transparent 42%, rgba(7,9,14,.55) 72%, rgba(7,9,14,.96) 100%),
       radial-gradient(ellipse at 28% 45%, transparent 55%, rgba(3,4,8,.5) 100%); }
   .grade { position: absolute; inset: 0; background: linear-gradient(115deg, rgba(39,70,248,.09) 0%, transparent 45%, rgba(39,70,248,.14) 100%); }
-  .grain { position: absolute; inset: 0; opacity: .07;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)' opacity='0.7'/%3E%3C/svg%3E"); }
+
+  /* ---- PHOTO RAIL ----
+     Mixed aspect ratios on purpose: the frames are whatever shape they were
+     shot in, so each card is a fixed height and the width follows. Scroll snap
+     does the work, the buttons are a convenience on top of it. */
+  .rail { position: relative; padding: 24px 0 4px; }
+  .rail-head { display: flex; align-items: baseline; justify-content: space-between;
+    gap: 12px; padding: 0 22px 12px; }
+  .rail-head h2 { font-size: 11px; letter-spacing: 4px; text-transform: uppercase;
+    color: #5b6478; font-weight: 900; }
+  .rail-head span { font-size: 11.5px; color: #4d5566; font-weight: 700; }
+  .rail-strip { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x proximity;
+    scroll-behavior: smooth; padding: 0 22px 14px; -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; cursor: grab; }
+  .rail-strip::-webkit-scrollbar { display: none; }
+  .rail-strip.dragging { cursor: grabbing; scroll-behavior: auto; scroll-snap-type: none; }
+  .rail-strip.dragging * { pointer-events: none; }
+  .shot { position: relative; flex: 0 0 auto; height: 260px; scroll-snap-align: start;
+    border-radius: 16px; overflow: hidden; background: #0e121b;
+    box-shadow: 0 18px 44px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.07); }
+  .shot img { height: 100%; width: auto; display: block; object-fit: cover; user-select: none;
+    -webkit-user-drag: none; }
+  .shot figcaption { position: absolute; left: 0; right: 0; bottom: 0; padding: 30px 14px 11px;
+    font-size: 10.5px; font-weight: 800; letter-spacing: 1.4px; text-transform: uppercase;
+    color: #e7eaf2; background: linear-gradient(to top, rgba(5,7,11,.9), transparent); }
+  .rail-nav { position: absolute; top: 50%; transform: translateY(-50%);
+    width: 38px; height: 38px; margin-top: 4px;
+    border-radius: 50%; border: 1px solid rgba(255,255,255,.14); background: rgba(10,13,20,.82);
+    color: #e7eaf2; font-size: 17px; line-height: 1; cursor: pointer; display: none;
+    align-items: center; justify-content: center; backdrop-filter: blur(6px); z-index: 3;
+    transition: background .15s ease, transform .15s ease; }
+  .rail-nav:hover { background: rgba(24,30,44,.95); transform: translateY(-50%) scale(1.06); }
+  .rail-nav[hidden] { display: none !important; }
+  .rail-nav.prev { left: 8px; } .rail-nav.next { right: 8px; }
+  .rail:hover .rail-nav, .rail-nav:focus-visible { display: flex; }
+  .rail.static .rail-dots, .rail.static .rail-head span { display: none; }
+  .rail.static .rail-strip { justify-content: center; }
+  .rail-dots { display: flex; gap: 6px; justify-content: center; padding: 2px 0 8px; }
+  .rail-dots b { width: 5px; height: 5px; border-radius: 50%; background: #232a3a;
+    transition: background .2s ease, width .2s ease; }
+  .rail-dots b.on { background: #6d82ff; width: 16px; border-radius: 3px; }
+  @media (min-width: 1000px) {
+    .rail { padding: 30px 0 6px; }
+    .rail-head { padding: 0 72px 14px; } .rail-strip { padding: 0 72px 16px; gap: 16px; }
+    .shot { height: 460px; }
+    .rail-nav.prev { left: 24px; } .rail-nav.next { right: 24px; }
+  }
+  @media (max-width: 640px) { .shot { height: 220px; } .rail-nav { display: none !important; } }
+  @media (prefers-reduced-motion: reduce) { .rail-strip { scroll-behavior: auto; } }
 
   /* speed lines, lambo style */
   .speedlines { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 2; }
@@ -440,6 +487,49 @@
   </div>
 
   <div class="finish" id="finish"></div>
+
+  <section class="rail reveal" id="rail" aria-roledescription="carousel" aria-label="Photos from the challenge">
+    <div class="rail-head">
+      <h2>The 300</h2><span>Four of them &middot; swipe &rarr;</span>
+    </div>
+    <button class="rail-nav prev" type="button" aria-label="Previous photo">&#8249;</button>
+    <div class="rail-strip" id="railstrip" tabindex="0" aria-label="Photo strip, use the arrow keys">
+      <figure class="shot">
+        <picture>
+          <source type="image/avif" srcset="gal-night-480.avif 480w, gal-night-720.avif 720w, gal-night-1100.avif 1100w" sizes="(min-width: 1000px) 440px, 300px">
+          <source type="image/webp" srcset="gal-night-480.webp 480w, gal-night-720.webp 720w, gal-night-1100.webp 1100w" sizes="(min-width: 1000px) 440px, 300px">
+          <img src="gal-night-720.webp" width="1100" height="825" loading="lazy" decoding="async" alt="Riding at night, lit by the bike light">
+        </picture>
+        <figcaption>Most of the 300 went like this</figcaption>
+      </figure>
+      <figure class="shot">
+        <picture>
+          <source type="image/avif" srcset="gal-friends-480.avif 480w, gal-friends-720.avif 720w, gal-friends-1100.avif 1100w" sizes="(min-width: 1000px) 250px, 170px">
+          <source type="image/webp" srcset="gal-friends-480.webp 480w, gal-friends-720.webp 720w, gal-friends-1100.webp 1100w" sizes="(min-width: 1000px) 250px, 170px">
+          <img src="gal-friends-720.webp" width="1100" height="1467" loading="lazy" decoding="async" alt="Riding a tree lined path alongside a friend">
+        </picture>
+        <figcaption>Some of it with company</figcaption>
+      </figure>
+      <figure class="shot">
+        <picture>
+          <source type="image/avif" srcset="gal-nightrun-480.avif 480w, gal-nightrun-720.avif 720w, gal-nightrun-1100.avif 1100w" sizes="(min-width: 1000px) 250px, 170px">
+          <source type="image/webp" srcset="gal-nightrun-480.webp 480w, gal-nightrun-720.webp 720w, gal-nightrun-1100.webp 1100w" sizes="(min-width: 1000px) 250px, 170px">
+          <img src="gal-nightrun-720.webp" width="1100" height="1467" loading="lazy" decoding="async" alt="Standing under a streetlight at night, arms out, tri kit and hydration vest on">
+        </picture>
+        <figcaption>Some nights it felt like this</figcaption>
+      </figure>
+      <figure class="shot">
+        <picture>
+          <source type="image/avif" srcset="gal-medal-480.avif 480w, gal-medal-720.avif 720w, gal-medal-1100.avif 1100w" sizes="(min-width: 1000px) 250px, 170px">
+          <source type="image/webp" srcset="gal-medal-480.webp 480w, gal-medal-720.webp 720w, gal-medal-1100.webp 1100w" sizes="(min-width: 1000px) 250px, 170px">
+          <img src="gal-medal-720.webp" width="1100" height="1467" loading="lazy" decoding="async" alt="Kneeling in the hallway with the medal, Odin licking his face">
+        </picture>
+        <figcaption>300 of 300 &middot; with Odin</figcaption>
+      </figure>
+    </div>
+    <button class="rail-nav next" type="button" aria-label="Next photo">&#8250;</button>
+    <div class="rail-dots" id="raildots" aria-hidden="true"></div>
+  </section>
   <div class="track-zone reveal">
     <div class="mrow" id="mrow"></div>
     <div class="track">
@@ -1754,6 +1844,86 @@
       'range from 2,468 to 3,003 ft, so the range is shown rather than a single invented number. ' +
       'Sources are public route files and athlete reports, not the official athlete guide. ' +
       'Send the guide and these get replaced with exact figures.';
+  })();
+
+  // ---- photo rail ----
+  // Scroll snap already does the hard part. This adds the arrows, the dots,
+  // drag-to-scroll for mice, and arrow keys. Everything degrades to a plain
+  // horizontal scroller if the script never runs.
+  (function () {
+    var strip = document.getElementById('railstrip'), rail = document.getElementById('rail');
+    if (!strip || !rail) return;
+    var shots = [].slice.call(strip.querySelectorAll('.shot'));
+    var prev = rail.querySelector('.rail-nav.prev'), next = rail.querySelector('.rail-nav.next');
+    var dots = document.getElementById('raildots');
+    if (shots.length < 2) { rail.style.display = 'none'; return; }
+
+    dots.innerHTML = shots.map(function () { return '<b></b>'; }).join('');
+    var pips = [].slice.call(dots.children);
+
+    // The cards very nearly fit the desktop width, so the scroll range can be a
+    // couple of hundred pixels while there are four slides. Picking the slide by
+    // whichever left edge is closest then never reaches the last two, and the
+    // dots sit on the first one forever. Position along the scroll range is the
+    // honest measure: it always spans every slide, whatever the range is.
+    function maxScroll() {
+      return Math.max(0, strip.scrollWidth - strip.clientWidth);
+    }
+    function nearest() {
+      var m = maxScroll();
+      if (m <= 0) return 0;
+      return Math.round((strip.scrollLeft / m) * (shots.length - 1));
+    }
+    function sync() {
+      var i = nearest(), m = maxScroll();
+      pips.forEach(function (p, n) { p.classList.toggle('on', n === i); });
+      prev.hidden = strip.scrollLeft <= 2;
+      next.hidden = strip.scrollLeft >= m - 2;
+    }
+    function go(dir) {
+      var i = Math.min(shots.length - 1, Math.max(0, nearest() + dir));
+      strip.scrollTo({ left: (i / (shots.length - 1)) * maxScroll(), behavior: 'smooth' });
+    }
+    prev.addEventListener('click', function () { go(-1); });
+    next.addEventListener('click', function () { go(1); });
+    strip.addEventListener('scroll', function () {
+      clearTimeout(sync.t); sync.t = setTimeout(sync, 60);
+    }, { passive: true });
+    strip.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowRight') { e.preventDefault(); go(1); }
+      if (e.key === 'ArrowLeft') { e.preventDefault(); go(-1); }
+    });
+
+    // Drag with a mouse. Touch already works natively, so pointer events from a
+    // finger are left alone rather than fought with.
+    var down = false, sx = 0, sl = 0, moved = 0;
+    strip.addEventListener('pointerdown', function (e) {
+      if (e.pointerType === 'touch') return;
+      down = true; moved = 0; sx = e.clientX; sl = strip.scrollLeft;
+      strip.classList.add('dragging');
+    });
+    window.addEventListener('pointermove', function (e) {
+      if (!down) return;
+      moved = e.clientX - sx;
+      strip.scrollLeft = sl - moved;
+    });
+    window.addEventListener('pointerup', function () {
+      if (!down) return;
+      down = false; strip.classList.remove('dragging');
+      if (Math.abs(moved) > 4) go(0); else sync();
+    });
+
+    // On a wide screen the whole set can fit, in which case there is nothing to
+    // slide and the dots, the swipe hint and the arrows are all lying. Centre it
+    // and drop the chrome until another photo pushes it over the edge.
+    function fit() {
+      var scrolls = strip.scrollWidth - strip.clientWidth > 4;
+      rail.classList.toggle('static', !scrolls);
+      if (!scrolls) { prev.hidden = next.hidden = true; }
+      sync();
+    }
+    fit();
+    window.addEventListener('resize', fit, { passive: true });
   })();
 
   // ---- race day briefing ----
