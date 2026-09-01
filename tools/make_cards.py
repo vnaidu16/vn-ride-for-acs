@@ -530,12 +530,12 @@ def build_story(ride, medal, done, goal, rng, raised, money_goal, donors, allrid
 
     pct = done / goal
     num = str(int(round(done)))
-    base, _ = milesnum(base, CX, P(430), num, P(200))
+    base, _ = milesnum(base, CX, P(412), num, P(172))
     d = ImageDraw.Draw(base)
-    ctext(d, CX, P(654), "OF %d MILES  \u00b7  %d%%" % (goal, round(pct * 100)),
-          sf(P(38), "Bold"), (138, 147, 171), P(8.5))
+    ctext(d, CX, P(602), "OF %d MILES  \u00b7  %d%%" % (goal, round(pct * 100)),
+          sf(P(36), "Bold"), (138, 147, 171), P(8))
 
-    BW, BH, BY = P(620), P(8), P(726)
+    BW, BH, BY = P(600), P(8), P(668)
     d.rounded_rectangle([CX - BW / 2, BY, CX + BW / 2, BY + BH], radius=BH // 2,
                         fill=(32, 38, 54))
     fwid = int(BW * min(1.0, pct))
@@ -544,28 +544,28 @@ def build_story(ride, medal, done, goal, rng, raised, money_goal, donors, allrid
                             radius=BH // 2, fill=(255, 255, 255))
 
     permile = ("$%.2f a mile" % (raised / done)) if done else ""
-    ctext(d, CX, P(784), "$%s raised  \u00b7  %d donors  \u00b7  %s"
+    ctext(d, CX, P(722), "$%s raised  \u00b7  %d donors  \u00b7  %s"
           % (format(raised, ","), donors, permile), sf(P(35), "Medium"), (255, 255, 255), P(0.2))
-    ctext(d, CX, P(834), "Every ride verified on Strava",
+    ctext(d, CX, P(768), "Every ride verified on Strava",
           sf(P(26), "Regular"), (124, 134, 154), P(0.4))
     if allriders:
-        ctext(d, CX, P(876), "$%s raised across the whole challenge" % format(allriders, ","),
+        ctext(d, CX, P(808), "$%s raised across the whole challenge" % format(allriders, ","),
               sf(P(25), "Regular"), (96, 105, 124), P(0.4))
 
-    base = pill(base, CX, P(946), P(548), P(84), "Donate on GoFundMe",
+    base = pill(base, CX, P(870), P(536), P(80), "Donate on GoFundMe",
                 sf(P(34), "Semibold"), (0, 229, 124), (6, 20, 13))
 
-    # P(1046) to P(1160): kept clear, and wider than before, for the link sticker.
+    # P(950) to P(1060): kept clear for the link sticker.
 
-    ctext(d, CX, P(1174), "Cancer doesn't cut corners.", sf(P(35), "Semibold"), (255, 77, 109))
-    ctext(d, CX, P(1218), "Neither do we.", sf(P(35), "Semibold"), (255, 255, 255))
-    ctext(d, CX, P(1268), "vnaidu16.github.io/vn-ride-for-acs",
+    ctext(d, CX, P(1074), "Cancer doesn't cut corners.", sf(P(35), "Semibold"), (255, 77, 109))
+    ctext(d, CX, P(1118), "Neither do we.", sf(P(35), "Semibold"), (255, 255, 255))
+    ctext(d, CX, P(1164), "vnaidu16.github.io/vn-ride-for-acs",
           sf(P(24), "Regular"), (110, 120, 140))
 
-    CARD_Y = P(1320)
-    M, GAP, rad = P(48), P(20), P(30)
+    CARD_Y = P(1212)
+    M, GAP, rad = P(40), P(18), P(30)
     CWd = (W - M * 2 - GAP) // 2
-    CH = H - CARD_Y - P(46)
+    CH = H - CARD_Y - P(42)
     mask = Image.new("L", (CWd, CH), 0)
     ImageDraw.Draw(mask).rounded_rectangle([0, 0, CWd - 1, CH - 1], radius=rad, fill=255)
 
@@ -579,14 +579,14 @@ def build_story(ride, medal, done, goal, rng, raised, money_goal, donors, allrid
     card = Image.new("RGB", (CWd, CH), (15, 18, 27))
     cd = ImageDraw.Draw(card)
     cd.rounded_rectangle([0, 0, CWd - 1, CH - 1], radius=rad, outline=(40, 47, 66), width=P(2))
-    cd.text((P(30), P(34)), "Thank you", font=sf(P(34), "Semibold"), fill=(255, 255, 255))
-    cd.text((P(30), P(80)), "to the %d people" % donors, font=sf(P(27), "Regular"),
+    cd.text((P(32), P(38)), "Thank you", font=sf(P(38), "Semibold"), fill=(255, 255, 255))
+    cd.text((P(32), P(92)), "to the %d people" % donors, font=sf(P(29), "Regular"),
             fill=(168, 178, 198))
-    cd.text((P(30), P(114)), "that funded this", font=sf(P(27), "Regular"),
+    cd.text((P(32), P(130)), "that funded this", font=sf(P(29), "Regular"),
             fill=(168, 178, 198))
     for i in range(6):
-        yy = P(186) + i * P(62)
-        cd.line([(P(30), yy), (CWd - P(30), yy)], fill=(30, 36, 52), width=P(2))
+        yy = P(212) + i * P(74)
+        cd.line([(P(32), yy), (CWd - P(32), yy)], fill=(30, 36, 52), width=P(2))
     base.paste(card, (bx, CARD_Y), mask)
     return base
 
