@@ -42,6 +42,33 @@
       radial-gradient(ellipse at 28% 45%, transparent 55%, rgba(3,4,8,.5) 100%); }
   .grade { position: absolute; inset: 0; background: linear-gradient(115deg, rgba(39,70,248,.09) 0%, transparent 45%, rgba(39,70,248,.14) 100%); }
 
+  /* ---- THE SWEEP ----
+     Same idea as the share card: the ride and what it was for in one frame,
+     dissolved into each other rather than cut. Here the seam does not sit
+     still. An oversized soft edged mask slides across, so the frame gives more
+     to one photo, then more to the other, and never fully commits. Masking
+     moves no layout, so this is a compositor job rather than a reflow. The
+     panel is on the left because the headline and the number live on the right. */
+  .hero2 { position: absolute; top: 0; bottom: 0; left: 0; width: 62%; z-index: 1;
+    /* A tight seam, not a dissolve. A wide fade put two faces on top of each
+       other every time the sweep crossed the middle. */
+    -webkit-mask-image: linear-gradient(84deg, #000 45.5%, transparent 47.8%);
+            mask-image: linear-gradient(84deg, #000 45.5%, transparent 47.8%);
+    -webkit-mask-size: 210% 100%;  mask-size: 210% 100%;
+    -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+    -webkit-mask-position: 46% 0;  mask-position: 46% 0;
+    animation: heroSweep 21s cubic-bezier(.45,0,.55,1) infinite alternate; }
+  /* Framed left inside its own panel so his face sits clear of the seam
+     rather than landing on the rider's shoulder at mid sweep. */
+  .hero2 img { width: 100%; height: 100%; object-fit: cover; object-position: 14% 40%; display: block; }
+  @keyframes heroSweep {
+    from { -webkit-mask-position: 14% 0; mask-position: 14% 0; }
+    to   { -webkit-mask-position: 74% 0; mask-position: 74% 0; }
+  }
+  /* Hold it at a balanced frame rather than animating. */
+  @media (prefers-reduced-motion: reduce) { .hero2 { animation: none; } }
+  @media (max-width: 640px) { .hero2 { width: 78%; } }
+
   /* ---- PHOTO RAIL ----
      Mixed aspect ratios on purpose: the frames are whatever shape they were
      shot in, so each card is a fixed height and the width follows. Scroll snap
@@ -91,23 +118,30 @@
   @media (max-width: 640px) { .shot { height: 220px; } .rail-nav { display: none !important; } }
   @media (prefers-reduced-motion: reduce) { .rail-strip { scroll-behavior: auto; } }
 
-  /* The four above are the highlights. This is everything else, folded away,
-     because most people will never open it and that is fine. Built on <details>
-     so it opens with no script at all. */
-  .more { margin: 2px 22px 4px; }
-  .more > summary { list-style: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
-    font-size: 10.5px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: #5b6478;
-    padding: 7px 13px; border: 1px solid #1a2030; border-radius: 999px; background: #0b0e15;
-    transition: color .18s ease, border-color .18s ease; }
-  .more > summary::-webkit-details-marker { display: none; }
-  .more > summary:hover, .more > summary:focus-visible { color: #9aa3b8; border-color: #2a3348; }
-  .more > summary .chev { display: inline-block; transition: transform .25s ease; font-size: 13px; line-height: 1; }
-  .more[open] > summary .chev { transform: rotate(90deg); }
-  .more > summary .cnt { color: #6d82ff; }
-  .more .rail-strip { padding: 12px 0 14px; margin: 0; }
-  .more .shot { height: 230px; }
-  @media (min-width: 1000px) { .more { margin: 4px 72px 6px; } .more .shot { height: 300px; } }
-  @media (max-width: 640px) { .more .shot { height: 190px; } }
+  /* The four before it are the highlights. This is the way into everything
+     else: a card that shows the rest as a blurred stack, and unpacks into the
+     strip when it is clicked. The photos wait in a <template>, so until someone
+     asks for them they are not in the document and not a single byte is fetched. */
+  .morecard { border: 0; padding: 0; cursor: pointer; font: inherit; color: inherit;
+    display: block; background: #0b0e15; width: 240px; }
+  .morecard .mc-tiles { position: absolute; inset: 0; display: block; }
+  .morecard .mc-tiles img { width: 100%; height: 100%; object-fit: cover; display: block;
+    filter: blur(16px) saturate(1.15) brightness(.62); transform: scale(1.25); }
+  .morecard .mc-face { position: absolute; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 3px; text-align: center;
+    background: radial-gradient(ellipse at center, rgba(7,9,14,.28), rgba(7,9,14,.72)); }
+  .morecard .mc-face b { font-size: 34px; font-weight: 900; color: #fff; letter-spacing: -1px;
+    text-shadow: 0 2px 18px rgba(0,0,0,.6); }
+  .morecard .mc-face span { font-size: 10px; font-weight: 800; letter-spacing: 2.4px;
+    text-transform: uppercase; color: #c3cad9; }
+  .morecard::after { content: ''; position: absolute; inset: 0; border-radius: 16px;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.12); transition: box-shadow .18s ease; }
+  .morecard:hover .mc-tiles img { filter: blur(13px) saturate(1.2) brightness(.72); }
+  .morecard:hover::after, .morecard:focus-visible::after {
+    box-shadow: inset 0 0 0 2px rgba(109,130,255,.75); }
+  .morecard .mc-tiles img, .morecard .mc-face { transition: filter .25s ease, opacity .25s ease; }
+  @media (min-width: 1000px) { .morecard { width: 300px; } }
+  @media (max-width: 640px) { .morecard { width: 165px; } .morecard .mc-face b { font-size: 26px; } }
 
   /* speed lines, lambo style */
   .speedlines { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 2; }
@@ -481,6 +515,13 @@
   <div class="orb" style="top: 980px; right: -140px; animation-delay: -8s;"></div>
   <div class="hero" id="hero">
     <picture><source type="image/avif" srcset="hero-800.avif 800w, hero-1120.avif 1120w, hero.avif 1500w, hero-2000.avif 2000w, hero-2600.avif 2600w, hero-3000.avif 3000w" sizes="100vw"><source type="image/webp" srcset="hero-800.webp 800w, hero-1120.webp 1120w, hero.webp 1500w, hero-2000.webp 2000w, hero-2600.webp 2600w, hero-3000.webp 3000w" sizes="100vw"><img class="bg" id="heroimg" src="hero.jpg" srcset="hero-800.jpg 800w, hero-1120.jpg 1120w, hero.jpg 1500w" sizes="100vw" width="1500" height="1125" fetchpriority="high" decoding="async" alt="V riding, hydration vest on, hands on the bars"></picture>
+    <div class="hero2" aria-hidden="true">
+      <picture>
+        <source type="image/avif" srcset="gal-medal-720.avif 720w, gal-medal-1100.avif 1100w, gal-medal-1600.avif 1600w" sizes="62vw">
+        <source type="image/webp" srcset="gal-medal-720.webp 720w, gal-medal-1100.webp 1100w, gal-medal-1600.webp 1600w" sizes="62vw">
+        <img src="gal-medal-1100.webp" width="1600" height="2133" decoding="async" fetchpriority="low" alt="">
+      </picture>
+    </div>
     <div class="scrim"></div>
     <div class="grade"></div>
     <div class="grain"></div>
@@ -544,22 +585,26 @@
         </picture>
         <figcaption>300 of 300 &middot; with Odin</figcaption>
       </figure>
+    <button class="shot morecard" id="morecard" type="button" aria-expanded="false"
+            aria-label="Show the rest of the photos">
+      <span class="mc-tiles" aria-hidden="true">
+        <img src="gal-spin-480.webp" alt="">
+      </span>
+      <span class="mc-face"><b id="mccount">+1</b><span>more</span></span>
+    </button>
     </div>
     <button class="rail-nav next" type="button" aria-label="Next photo">&#8250;</button>
     <div class="rail-dots" id="raildots" aria-hidden="true"></div>
-    <details class="more" id="more">
-      <summary><span class="chev">&#9656;</span> More from the 300 <span class="cnt" id="morecount"></span></summary>
-      <div class="rail-strip" id="morestrip" tabindex="0" aria-label="More photos, use the arrow keys">
-        <figure class="shot">
-          <picture>
-            <source type="image/avif" srcset="gal-spin-480.avif 480w, gal-spin-720.avif 720w, gal-spin-1100.avif 1100w" sizes="(min-width: 1000px) 400px, 280px">
-            <source type="image/webp" srcset="gal-spin-480.webp 480w, gal-spin-720.webp 720w, gal-spin-1100.webp 1100w" sizes="(min-width: 1000px) 400px, 280px">
-            <img src="gal-spin-720.webp" width="1100" height="825" loading="lazy" decoding="async" alt="Riding a stationary bike at the gym, watch on, screen lit">
-          </picture>
-          <figcaption>Indoor bike, same miles</figcaption>
+    <template id="moretpl">
+      <figure class="shot">
+            <picture>
+              <source type="image/avif" srcset="gal-spin-480.avif 480w, gal-spin-720.avif 720w, gal-spin-1100.avif 1100w" sizes="(min-width: 1000px) 400px, 280px">
+              <source type="image/webp" srcset="gal-spin-480.webp 480w, gal-spin-720.webp 720w, gal-spin-1100.webp 1100w" sizes="(min-width: 1000px) 400px, 280px">
+              <img src="gal-spin-720.webp" width="1100" height="825" loading="lazy" decoding="async" alt="Riding a stationary bike at the gym, watch on, screen lit">
+            </picture>
         </figure>
-      </div>
-    </details>
+    </template>
+
   </section>
   <div class="track-zone reveal">
     <div class="mrow" id="mrow"></div>
@@ -1925,13 +1970,19 @@
   (function () {
     var strip = document.getElementById('railstrip'), rail = document.getElementById('rail');
     if (!strip || !rail) return;
-    var shots = [].slice.call(strip.querySelectorAll('.shot'));
     var prev = rail.querySelector('.rail-nav.prev'), next = rail.querySelector('.rail-nav.next');
     var dots = document.getElementById('raildots');
-    if (shots.length < 2) { rail.style.display = 'none'; return; }
+    var shots = [], pips = [];
 
-    dots.innerHTML = shots.map(function () { return '<b></b>'; }).join('');
-    var pips = [].slice.call(dots.children);
+    // The strip changes shape once the "more" card unpacks, so the slide list
+    // and the dots are rebuilt rather than captured once.
+    function census() {
+      shots = [].slice.call(strip.querySelectorAll('.shot'));
+      dots.innerHTML = shots.map(function () { return '<b></b>'; }).join('');
+      pips = [].slice.call(dots.children);
+    }
+    census();
+    if (shots.length < 2) { rail.style.display = 'none'; return; }
 
     // The cards very nearly fit the desktop width, so the scroll range can be a
     // couple of hundred pixels while there are four slides. Picking the slide by
@@ -1940,6 +1991,11 @@
     // honest measure: it always spans every slide, whatever the range is.
     function maxScroll() {
       return Math.max(0, strip.scrollWidth - strip.clientWidth);
+    }
+    // The strip is padded, so a slide's offsetLeft is not where it should be
+    // scrolled to. Used when jumping to a newly revealed slide.
+    function pad() {
+      return parseFloat(getComputedStyle(strip).paddingLeft) || 0;
     }
     function nearest() {
       var m = maxScroll();
@@ -1996,36 +2052,34 @@
     }
     fit();
     window.addEventListener('resize', fit, { passive: true });
-  })();
 
-  // ---- the "more" drawer ----
-  // Counts itself so the label never disagrees with what is inside, and hides
-  // entirely when empty. Drag to scroll is shared with the main rail; snapping
-  // and touch already work from CSS alone.
-  (function () {
-    var box = document.getElementById('more'), strip = document.getElementById('morestrip');
-    if (!box || !strip) return;
-    var n = strip.querySelectorAll('.shot').length;
-    if (!n) { box.style.display = 'none'; return; }
-    var cnt = document.getElementById('morecount');
-    if (cnt) cnt.textContent = '(' + n + ')';
-
-    var down = false, sx = 0, sl = 0;
-    strip.addEventListener('pointerdown', function (e) {
-      if (e.pointerType === 'touch') return;
-      down = true; sx = e.clientX; sl = strip.scrollLeft; strip.classList.add('dragging');
-    });
-    window.addEventListener('pointermove', function (e) {
-      if (down) strip.scrollLeft = sl - (e.clientX - sx);
-    });
-    window.addEventListener('pointerup', function () {
-      down = false; strip.classList.remove('dragging');
-    });
-    strip.addEventListener('keydown', function (e) {
-      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
-      e.preventDefault();
-      strip.scrollBy({ left: (e.key === 'ArrowRight' ? 1 : -1) * 240, behavior: 'smooth' });
-    });
+    // The last card is the way in to the rest of the photos. Clicking it swaps
+    // itself for the real slides, which until now have been sitting inertly in a
+    // <template>, costing no layout and no requests.
+    var card = document.getElementById('morecard');
+    var tpl = document.getElementById('moretpl');
+    if (card && tpl && tpl.content.querySelectorAll('.shot').length) {
+      var extra = tpl.content.querySelectorAll('.shot').length;
+      var cnt = document.getElementById('mccount');
+      if (cnt) cnt.textContent = '+' + extra;
+      card.addEventListener('click', function () {
+        var frag = tpl.content.cloneNode(true);
+        var first = frag.querySelector('.shot');
+        strip.replaceChild(frag, card);
+        card.setAttribute('aria-expanded', 'true');
+        census();
+        fit();
+        if (first) {
+          strip.scrollTo({ left: first.offsetLeft - pad(), behavior: 'smooth' });
+          first.setAttribute('tabindex', '-1');
+          first.focus({ preventScroll: true });
+        }
+      });
+    } else if (card) {
+      card.remove();
+      census();
+      fit();
+    }
   })();
 
   // ---- race day briefing ----
