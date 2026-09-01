@@ -969,7 +969,35 @@
       }
     });
   }, { threshold: 0.25 });
-  document.querySelectorAll('.stats .reveal, .log.reveal, .integrity.reveal, .donate.reveal, .gfm-live.reveal, .footer.reveal').forEach(function (el) { io.observe(el); });
+  // Everything with .reveal starts at opacity 0, so anything this misses stays
+  // invisible forever while still taking up its full height. This used to be a
+  // hand written list of selectors and the photo rail was not on it, which left
+  // a rail sized hole in the page. Observe them all instead, minus the hero and
+  // the track, which heroStart() reveals on its own stagger.
+  document.querySelectorAll('.reveal').forEach(function (el) {
+    if (el.closest('.hero') || el.classList.contains('track-zone')) return;
+    io.observe(el);
+  });
+  // If the observer is unavailable, show the content rather than hiding it.
+  if (!('IntersectionObserver' in window)) {
+    document.querySelectorAll('.reveal').forEach(function (el) { el.classList.add('in'); });
+  }
+  // Belt and braces. Hiding content is the failure mode that costs donations,
+  // so anything sitting in the viewport and still invisible a moment after load
+  // gets shown regardless of why the observer missed it. Content below the fold
+  // is left alone so it still animates in on scroll.
+  function showWhatIsOnScreen() {
+    var left = document.querySelectorAll('.reveal:not(.in)');
+    left.forEach(function (el) {
+      var r = el.getBoundingClientRect();
+      if (r.top < window.innerHeight && r.bottom > 0) el.classList.add('in');
+    });
+    if (!left.length) window.removeEventListener('scroll', netTick);
+  }
+  var netT;
+  function netTick() { clearTimeout(netT); netT = setTimeout(showWhatIsOnScreen, 200); }
+  setTimeout(showWhatIsOnScreen, 2500);
+  window.addEventListener('scroll', netTick, { passive: true });
 
   // Share button: native sheet on mobile, copy link on desktop
   var shareBtn = document.getElementById('sharebtn');
