@@ -563,8 +563,11 @@ def build_story(ride, medal, done, goal, rng, raised, money_goal, donors, allrid
 
     # Tighter on the two of them: the full frame carried a lot of hallway.
     mw, mh = medal.size
-    tight = medal.crop((0, round(mh * 0.13), mw, round(mh * 0.99)))
-    base.paste(cover(tight, CWd, CH, 0.47, 0.5), (M, CARD_Y), mask)
+    # Bottom edge stays: V confirmed it. The top comes down to 22%, which takes
+    # out most of the hallway above his cap. Past about 25% the source turns
+    # wide enough relative to this card that cover starts eating Odin's side.
+    tight = medal.crop((0, round(mh * 0.22), mw, round(mh * 0.99)))
+    base.paste(cover(tight, CWd, CH, 0.45, 0.5), (M, CARD_Y), mask)
 
     bx = M + CWd + GAP
     card = Image.new("RGB", (CWd, CH), (15, 18, 27))
