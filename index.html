@@ -551,24 +551,24 @@
     <div class="hint">Every ride is a receipt. <em>Tap ↗ to open it on Strava</em></div>
     <div class="log-grid">
       <div>
-        <a class="row" target="_blank" href="https://www.strava.com/activities/19984634119"><span>Aug 31</span><b>10.0 mi</b></a>
-        <a class="row" target="_blank" href="https://www.strava.com/activities/19971231214"><span>Aug 30</span><b>56.1 mi</b></a>
-        <a class="row" target="_blank" href="https://www.strava.com/activities/19943930495"><span>Aug 28</span><b>28.0 mi</b></a>
-        <a class="row" target="_blank" href="https://www.strava.com/activities/19931538764"><span>Aug 27</span><b>10.0 mi</b></a>
-        <a class="row" target="_blank" href="https://www.strava.com/activities/19916597460"><span>Aug 26</span><b>10.0 mi</b></a>
-        <a class="row" target="_blank" href="https://www.strava.com/activities/19902713711"><span>Aug 25</span><b>10.4 mi</b></a>
-        <a class="row" target="_blank" href="https://www.strava.com/activities/19887305603"><span>Aug 24</span><b>16.0 mi</b></a>
-        <a class="row" target="_blank" href="https://www.strava.com/activities/19887695455"><span>Aug 22</span><b>40.6 mi</b></a>
-        <a class="row" target="_blank" href="https://www.strava.com/activities/19831877282"><span>Aug 20</span><b>15.0 mi</b></a>
-        <a class="row" target="_blank" href="https://www.strava.com/activities/19803549084"><span>Aug 18</span><b>27.0 mi</b></a>
+        <a class="row" target="_blank" rel="noopener" href="https://www.strava.com/activities/19984634119"><span>Aug 31</span><b>10.0 mi</b></a>
+        <a class="row" target="_blank" rel="noopener" href="https://www.strava.com/activities/19971231214"><span>Aug 30</span><b>56.1 mi</b></a>
+        <a class="row" target="_blank" rel="noopener" href="https://www.strava.com/activities/19943930495"><span>Aug 28</span><b>28.0 mi</b></a>
+        <a class="row" target="_blank" rel="noopener" href="https://www.strava.com/activities/19931538764"><span>Aug 27</span><b>10.0 mi</b></a>
+        <a class="row" target="_blank" rel="noopener" href="https://www.strava.com/activities/19916597460"><span>Aug 26</span><b>10.0 mi</b></a>
+        <a class="row" target="_blank" rel="noopener" href="https://www.strava.com/activities/19902713711"><span>Aug 25</span><b>10.4 mi</b></a>
+        <a class="row" target="_blank" rel="noopener" href="https://www.strava.com/activities/19887305603"><span>Aug 24</span><b>16.0 mi</b></a>
+        <a class="row" target="_blank" rel="noopener" href="https://www.strava.com/activities/19887695455"><span>Aug 22</span><b>40.6 mi</b></a>
+        <a class="row" target="_blank" rel="noopener" href="https://www.strava.com/activities/19831877282"><span>Aug 20</span><b>15.0 mi</b></a>
+        <a class="row" target="_blank" rel="noopener" href="https://www.strava.com/activities/19803549084"><span>Aug 18</span><b>27.0 mi</b></a>
       </div>
       <div>
-        <a class="row" target="_blank" href="https://www.strava.com/activities/19788398403"><span>Aug 17</span><b>15.0 mi</b></a>
-        <a class="row" target="_blank" href="https://www.strava.com/activities/19759677242"><span>Aug 15</span><b>15.0 mi</b></a>
-        <a class="row" target="_blank" href="https://www.strava.com/activities/19690283403"><span>Aug 10</span><b>15.0 mi</b></a>
-        <a class="row" target="_blank" href="https://www.strava.com/activities/19690312614"><span>Aug 7</span><b>22.0 mi</b></a>
-        <a class="row" target="_blank" href="https://www.strava.com/activities/19690260296"><span>Aug 4</span><b>10.0 mi</b></a>
-        <a class="row" target="_blank" href="https://www.strava.com/activities/19591754894"><span>Aug 3</span><b>10.0 mi</b></a>
+        <a class="row" target="_blank" rel="noopener" href="https://www.strava.com/activities/19788398403"><span>Aug 17</span><b>15.0 mi</b></a>
+        <a class="row" target="_blank" rel="noopener" href="https://www.strava.com/activities/19759677242"><span>Aug 15</span><b>15.0 mi</b></a>
+        <a class="row" target="_blank" rel="noopener" href="https://www.strava.com/activities/19690283403"><span>Aug 10</span><b>15.0 mi</b></a>
+        <a class="row" target="_blank" rel="noopener" href="https://www.strava.com/activities/19690312614"><span>Aug 7</span><b>22.0 mi</b></a>
+        <a class="row" target="_blank" rel="noopener" href="https://www.strava.com/activities/19690260296"><span>Aug 4</span><b>10.0 mi</b></a>
+        <a class="row" target="_blank" rel="noopener" href="https://www.strava.com/activities/19591754894"><span>Aug 3</span><b>10.0 mi</b></a>
       </div>
     </div>
   </div>
@@ -987,12 +987,14 @@
   // gets shown regardless of why the observer missed it. Content below the fold
   // is left alone so it still animates in on scroll.
   function showWhatIsOnScreen() {
-    var left = document.querySelectorAll('.reveal:not(.in)');
-    left.forEach(function (el) {
+    document.querySelectorAll('.reveal:not(.in)').forEach(function (el) {
       var r = el.getBoundingClientRect();
       if (r.top < window.innerHeight && r.bottom > 0) el.classList.add('in');
     });
-    if (!left.length) window.removeEventListener('scroll', netTick);
+    // Re-query, because the list above was taken before those were revealed.
+    if (!document.querySelectorAll('.reveal:not(.in)').length) {
+      window.removeEventListener('scroll', netTick);
+    }
   }
   var netT;
   function netTick() { clearTimeout(netT); netT = setTimeout(showWhatIsOnScreen, 200); }
@@ -1512,7 +1514,7 @@
         '<span class="ext">'+(a.id ? '\u2197' : '')+'</span>';
       // No Strava id means it was logged by hand, so no link and no arrow.
       if (!a.id) return '<div class="log-row nolink" title="Logged manually, not on Strava">'+inner+'</div>';
-      return '<a class="log-row" target="_blank" href="https://www.strava.com/activities/'+a.id+'">'+inner+'</a>';
+      return '<a class="log-row" target="_blank" rel="noopener" href="https://www.strava.com/activities/'+a.id+'">'+inner+'</a>';
     }).join('');
     document.getElementById('logrows').innerHTML = rows;
   }
