@@ -26,7 +26,7 @@ import os
 import re
 import sys
 
-from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageFont
+from PIL import Image, ImageChops, ImageDraw, ImageEnhance, ImageFilter, ImageFont
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -38,6 +38,8 @@ DARK = (7, 9, 14)
 
 FONTS = "/System/Library/Fonts/Supplemental/"
 F_BOLD = FONTS + "Arial Bold.ttf"
+AVENIR = "/System/Library/Fonts/Avenir Next.ttc"
+AV_HEAVY, AV_BOLD, AV_DEMI = 8, 0, 2
 F_BLACK = FONTS + "Arial Black.ttf"
 F_ITAL = FONTS + "Arial Bold Italic.ttf"
 
@@ -45,11 +47,18 @@ RIDE_IMG = ["hero-2600.avif", "hero-1120.jpg", "hero.jpg"]
 MEDAL_IMG = ["gal-medal-1100.avif", "gal-medal-720.avif", "gal-medal.jpg"]
 
 
-def font(path, size):
+def font(path, size, index=None):
     try:
+        if index is not None:
+            return ImageFont.truetype(path, size, index=index)
         return ImageFont.truetype(path, size)
     except OSError:
         return ImageFont.load_default(size)
+
+
+def av(size, weight=None):
+    """Avenir Next. Closer to the story that worked than Arial Black."""
+    return font(AVENIR, size, AV_HEAVY if weight is None else weight)
 
 
 def pick(names):
@@ -349,61 +358,99 @@ def skewbar(base, cx, y, w, h, pct, lean=14):
     return base
 
 
+def pill(base, cx, y, w, h, label, fnt, bg, fg, arrow=True):
+    """A button. The arrow is drawn, not typed: Avenir has no glyph for it and
+    it was rendering as a tofu box."""
+    d = ImageDraw.Draw(base)
+    d.rounded_rectangle([cx - w / 2, y, cx + w / 2, y + h], radius=h // 2, fill=bg)
+    tw = d.textlength(label, font=fnt)
+    ax = 26 if arrow else 0
+    tx = cx - (tw + ax) / 2
+    d.text((tx, y + (h - fnt.size * 1.32) / 2), label, font=fnt, fill=fg)
+    if arrow:
+        ax0 = tx + tw + 16
+        ay = y + h / 2
+        d.line([(ax0, ay), (ax0 + 17, ay)], fill=fg, width=3)
+        d.line([(ax0 + 10, ay - 7), (ax0 + 17, ay)], fill=fg, width=3)
+        d.line([(ax0 + 10, ay + 7), (ax0 + 17, ay)], fill=fg, width=3)
+    return base
+
+
 def build_story(ride, medal, done, goal, rng, raised, money_goal, donors, allriders=0):
-    """Rebuilt to match the story V actually liked: the photo full bleed, one
-    big white number over it, and a compact stack of facts on the darkened
-    lower third. No panels, no cropping the photo into a strip."""
     W, H = 1080, 1920
     CX = W // 2
-    BIKE_H, MEDAL_END = 380, 1120
-    base = Image.new("RGB", (W, H), (5, 7, 11))
+    TOP_H, CARD_Y = 300, 1240
+    base = Image.new("RGB", (W, H), (7, 9, 14))
 
-    # Bike small across the top, Odin large beneath it as the one that carries
-    # the post. The type sits on the lower part of Odin once it is dark enough,
-    # and on flat ground below that.
-    base.paste(cover(ride, W, BIKE_H, 0.32, 0.30), (0, 0))
-    base.paste(cover(medal, W, MEDAL_END - BIKE_H, 0.5, 0.28), (0, BIKE_H))
-
-    # Only the last stretch of the photo fades out, so the medal in his hand is
-    # never sat on. The number goes underneath on flat ground instead.
-    grad = Image.new("L", (W, MEDAL_END), 0)
-    gd = ImageDraw.Draw(grad)
-    for i in range(MEDAL_END):
-        t = max(0.0, (i - 990) / 130.0)
-        gd.line([(0, i), (W, i)], fill=int(min(1.0, t) ** 1.1 * 252))
-    base.paste(Image.new("RGB", (W, MEDAL_END), (5, 7, 11)), (0, 0), grad)
+    # Blurred, but still legibly a person on a bike. The old version blurred it
+    # into grey mush and read like a mistake.
+    top = cover(ride, W, TOP_H, 0.32, 0.30).filter(ImageFilter.GaussianBlur(9))
+    top = ImageEnhance.Brightness(top).enhance(0.88)
+    base.paste(top, (0, 0))
+    fade = Image.new("L", (W, 150), 0)
+    fd = ImageDraw.Draw(fade)
+    for i in range(150):
+        fd.line([(0, i), (W, i)], fill=int(255 * (i / 150) ** 0.75))
+    base.paste(Image.new("RGB", (W, 150), (7, 9, 14)), (0, TOP_H - 150), fade)
 
     pct = done / goal
     num = str(int(round(done)))
-    fn = font(F_BLACK, 178)
     d = ImageDraw.Draw(base)
-    d.text((CX - d.textlength(num, font=fn) / 2, 1128), num, font=fn, fill=(255, 255, 255))
+    fn = av(190)
+    d.text((CX - d.textlength(num, font=fn) / 2, 348), num, font=fn, fill=(255, 255, 255))
+    ctext(d, CX, 572, "OF %d MILES  \u00b7  %d%%" % (goal, round(pct * 100)),
+          av(42), (226, 231, 240), 0.5)
 
-    ctext(d, CX, 1336, "OF %d MILES  \u00b7  %d%%" % (goal, round(pct * 100)),
-          font(F_BLACK, 42), (232, 236, 244), 1.5)
-    base = skewbar(base, CX, 1400, 760, 18, min(1.0, pct))
-    d = ImageDraw.Draw(base)
+    # A plain rounded track, sized to the type above it, instead of a skewed
+    # slash floating on its own.
+    BW, BH, BY = 620, 10, 646
+    d.rounded_rectangle([CX - BW / 2, BY, CX + BW / 2, BY + BH], radius=BH // 2,
+                        fill=(32, 38, 54))
+    fwid = int(BW * min(1.0, pct))
+    if fwid:
+        d.rounded_rectangle([CX - BW / 2, BY, CX - BW / 2 + fwid, BY + BH],
+                            radius=BH // 2, fill=(255, 255, 255))
 
-    permile = ("$%.2f A MILE" % (raised / done)) if done else ""
-    ctext(d, CX, 1450, "$%s RAISED  \u00b7  %d DONORS  \u00b7  %s"
-          % (format(raised, ","), donors, permile), font(F_BLACK, 36), (255, 255, 255), 0.5)
-    ctext(d, CX, 1500, "EVERY RIDE VERIFIED ON STRAVA", font(F_BOLD, 26), (128, 146, 255), 1.2)
+    permile = ("$%.2f a mile" % (raised / done)) if done else ""
+    ctext(d, CX, 704, "$%s raised  \u00b7  %d donors  \u00b7  %s"
+          % (format(raised, ","), donors, permile), av(36, AV_BOLD), (255, 255, 255), 0.2)
+    ctext(d, CX, 756, "Every ride verified on Strava", av(27, AV_DEMI), (124, 134, 154), 0.4)
     if allriders:
-        ctext(d, CX, 1538, "$%s RAISED ACROSS THE WHOLE CHALLENGE" % format(allriders, ","),
-              font(F_BOLD, 24), (132, 142, 162), 1.0)
+        ctext(d, CX, 798, "$%s raised across the whole challenge" % format(allriders, ","),
+              av(26, AV_DEMI), (96, 105, 124), 0.4)
 
-    fc = font(F_BLACK, 38)
-    lab = "DONATE ON GOFUNDME  \u2192"
-    cw = tracked_w(d, lab, fc, 1.0)
-    d.rounded_rectangle([CX - cw / 2 - 40, 1590, CX + cw / 2 + 40, 1674], radius=42, fill=GREEN)
-    tracked(d, (CX - cw / 2, 1612), lab, fc, (5, 20, 12), 1.0)
+    base = pill(base, CX, 878, 560, 88, "Donate on GoFundMe", av(36, AV_BOLD),
+                (0, 229, 124), (6, 20, 13))
 
-    # 1686 to 1772 stays clear: that is where the link sticker goes. On the old
-    # one the sticker landed on top of the button.
+    # 978 to 1064 stays clear for the link sticker.
 
-    ctext(d, CX, 1786, "Cancer doesn't cut corners.", font(F_BLACK, 37), (255, 77, 109))
-    ctext(d, CX, 1832, "Neither do we.", font(F_BLACK, 37), (255, 255, 255))
-    ctext(d, CX, 1874, "vnaidu16.github.io/vn-ride-for-acs", font(F_BOLD, 25), (120, 130, 150))
+    ctext(d, CX, 1086, "Cancer doesn't cut corners.", av(37), (255, 77, 109))
+    ctext(d, CX, 1132, "Neither do we.", av(37), (255, 255, 255))
+    ctext(d, CX, 1186, "vnaidu16.github.io/vn-ride-for-acs", av(25, AV_DEMI), (110, 120, 140))
+
+    # Two cards at the foot. Half the width is almost exactly the finisher
+    # photo's own aspect ratio, so it is barely cropped at all.
+    M, GAP, rad = 58, 22, 28
+    CWd = (W - M * 2 - GAP) // 2
+    CH = H - CARD_Y - 58
+    mask = Image.new("L", (CWd, CH), 0)
+    ImageDraw.Draw(mask).rounded_rectangle([0, 0, CWd - 1, CH - 1], radius=rad, fill=255)
+
+    base.paste(cover(medal, CWd, CH, 0.5, 0.30), (M, CARD_Y), mask)
+
+    bx = M + CWd + GAP
+    card = Image.new("RGB", (CWd, CH), (15, 18, 27))
+    cd = ImageDraw.Draw(card)
+    cd.rounded_rectangle([0, 0, CWd - 1, CH - 1], radius=rad, outline=(40, 47, 66), width=2)
+    cd.text((30, 34), "Thank you", font=av(32), fill=(255, 255, 255))
+    cd.text((30, 78), "%d people funded this" % donors, font=av(23, AV_DEMI),
+            fill=(120, 130, 150))
+    # Faint rules so the space reads as a list waiting to be filled rather than
+    # an empty box. V tags the donors over these.
+    for i in range(6):
+        yy = 146 + i * 62
+        cd.line([(30, yy), (CWd - 30, yy)], fill=(30, 36, 52), width=2)
+    base.paste(card, (bx, CARD_Y), mask)
     return base
 
 
