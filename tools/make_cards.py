@@ -212,29 +212,29 @@ def build_og(ride, medal, done, goal, rng, raised, money_goal):
 
     d = ImageDraw.Draw(base)
     tracked(d, (L, 60), "CHALLENGE COMPLETE" if done >= goal else "THE 300 MILE CHALLENGE",
-            font(F_BLACK, 21), GREEN, 3.0)
-    tracked(d, (L, 97), "BENEFITING THE AMERICAN CANCER SOCIETY", font(F_BOLD, 17), GREY, 2.5)
-    fh = font(F_BLACK, 54)
+            sf(21, "Bold"), GREEN, 3.0)
+    tracked(d, (L, 97), "BENEFITING THE AMERICAN CANCER SOCIETY", sf(17, "Medium"), GREY, 2.5)
+    fh = sf(54, "Bold")
     d.text((L, 143), "Riding for a world", font=fh, fill=WHITE)
     d.text((L, 199), "with ", font=fh, fill=WHITE)
     d.text((L + d.textlength("with ", font=fh), 199), "less cancer.", font=fh, fill=BLUE)
 
-    fn = font(F_ITAL, 140)
+    fn = sf(140, "Black")
     num = str(int(round(done)))
     base = glow_number(base, (L, 278), num, fn)
     d = ImageDraw.Draw(base)
     tracked(d, (L + d.textlength(num, font=fn) + 24, 372), "OF %d MILES" % goal,
-            font(F_BLACK, 23), (150, 160, 180), 3.0)
+            sf(23, "Bold"), (150, 160, 180), 3.0)
 
     base = bar(base, L, seam - 40, 452, 12, min(1.0, done / goal))
     d = ImageDraw.Draw(base)
-    fs = font(F_BOLD, 20)
+    fs = sf(20, "Medium")
     d.text((L, 484), "%d%% complete" % round(100 * done / goal), font=fs, fill=GREEN)
     if rng:
         d.text((L + d.textlength("100% complete", font=fs) + 34, 484), rng,
                font=fs, fill=(120, 130, 150))
 
-    fc = font(F_BLACK, 22)
+    fc = sf(22, "Bold")
     lab = "DONATE ON GOFUNDME"
     cw = tracked_w(d, lab, fc, 2.0)
     d.rounded_rectangle([L, 540, L + cw + 56, 590], radius=25, fill=GREEN)
@@ -274,21 +274,21 @@ def typeblock(base, x, y, W, done, goal, raised, donors, allriders, scale=1.0,
     """Everything below the photo. Nothing here sits on an image."""
     S = lambda v: max(1, round(v * scale))
     d = ImageDraw.Draw(base)
-    tracked(d, (x, y), "CHALLENGE COMPLETE", font(F_BLACK, S(23)), GREEN, S(3.4))
+    tracked(d, (x, y), "CHALLENGE COMPLETE", sf(S(23), "Bold"), GREEN, S(3.4))
     tracked(d, (x, y + S(40)), "BENEFITING THE AMERICAN CANCER SOCIETY",
-            font(F_BOLD, S(18)), (150, 159, 178), S(2.6))
+            sf(S(18), "Medium"), (150, 159, 178), S(2.6))
 
-    fn = font(F_ITAL, S(150))
+    fn = sf(S(150), "Black")
     num = str(int(round(done)))
     ny = y + S(88)
     base = glow_number(base, (x, ny), num, fn)
     d = ImageDraw.Draw(base)
     tracked(d, (x + d.textlength(num, font=fn) + S(24), ny + S(96)),
-            "OF %d MILES" % goal, font(F_BLACK, S(26)), (150, 160, 180), S(3.2))
+            "OF %d MILES" % goal, sf(S(26), "Bold"), (150, 160, 180), S(3.2))
     yy = ny + S(178)
 
     if headline:
-        fh = font(F_BLACK, S(48))
+        fh = sf(S(48), "Bold")
         d.text((x, yy), "Riding for a world", font=fh, fill=WHITE)
         d.text((x, yy + S(54)), "with ", font=fh, fill=WHITE)
         d.text((x + d.textlength("with ", font=fh), yy + S(54)), "less cancer.",
@@ -300,15 +300,15 @@ def typeblock(base, x, y, W, done, goal, raised, donors, allriders, scale=1.0,
     yy += S(36)
     d = ImageDraw.Draw(base)
     d.text((x, yy), "$%s raised  \u00b7  %d donors" % (format(raised, ","), donors),
-           font=font(F_BOLD, S(23)), fill=GREEN)
+           font=sf(S(23), "Medium"), fill=GREEN)
     if allriders:
         d.text((x, yy + S(34)),
                "$%s across every rider in the challenge" % format(allriders, ","),
-               font=font(F_BOLD, S(18)), fill=(112, 122, 142))
+               font=sf(S(18), "Medium"), fill=(112, 122, 142))
     yy += S(78)
 
     if cta:
-        fc = font(F_BLACK, S(25))
+        fc = sf(S(25), "Bold")
         lab = "DONATE ON GOFUNDME"
         cw = tracked_w(d, lab, fc, S(2.3))
         d.rounded_rectangle([x, yy, x + cw + S(62), yy + S(62)], radius=S(31), fill=GREEN)
