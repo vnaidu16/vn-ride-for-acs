@@ -557,7 +557,7 @@ def build_story(ride, medal, done, goal, rng, raised, money_goal, donors, allrid
     CARD_Y = P(958)
     M, GAP, rad = P(28), P(16), P(32)
     CWd = (W - M * 2 - GAP) // 2
-    CH = H - CARD_Y - P(36)
+    CH = H - CARD_Y - P(82)          # room under the cards for the IRONMAN line
     mask = Image.new("L", (CWd, CH), 0)
     ImageDraw.Draw(mask).rounded_rectangle([0, 0, CWd - 1, CH - 1], radius=rad, fill=255)
 
@@ -588,6 +588,17 @@ def build_story(ride, medal, done, goal, rng, raised, money_goal, donors, allrid
     cd.text((P(34), P(816)), "Your donation funds cancer", font=fnote, fill=(112, 122, 142))
     cd.text((P(34), P(846)), "research and patient support.", font=fnote, fill=(112, 122, 142))
     base.paste(card, (bx, CARD_Y), mask)
+
+    # Same callout as the feed post, at the foot.
+    d = ImageDraw.Draw(base)
+    lab, flab = "IRONMAN 70.3 NEXT", sf(P(21), "Semibold")
+    mh_i = P(26)
+    mw_i = round(40 * mh_i / 34.0)
+    tw = tracked_w(d, lab, flab, P(2.4))
+    gx = (W - (mw_i + P(14) + tw)) / 2
+    mdot(base, gx, H - P(58), mh_i)
+    d = ImageDraw.Draw(base)
+    tracked(d, (gx + mw_i + P(14), H - P(55)), lab, flab, (120, 129, 148), P(2.4))
     return base
 
 
