@@ -581,6 +581,12 @@ def build_story(ride, medal, done, goal, rng, raised, money_goal, donors, allrid
     for i in range(6):
         yy = P(240) + i * P(92)
         cd.line([(P(34), yy), (CWd - P(34), yy)], fill=(30, 36, 52), width=P(2))
+    # A line at the foot on what the money actually does. Kept to research and
+    # patient support, which is what ACS funds, rather than a broader claim the
+    # rest of this page would not stand behind.
+    fnote = sf(P(21), "Regular")
+    cd.text((P(34), P(816)), "Your donation funds cancer", font=fnote, fill=(112, 122, 142))
+    cd.text((P(34), P(846)), "research and patient support.", font=fnote, fill=(112, 122, 142))
     base.paste(card, (bx, CARD_Y), mask)
     return base
 
