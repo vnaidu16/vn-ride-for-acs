@@ -295,6 +295,30 @@ def read_money():
         return 0, 0, 0
 
 
+def ctext(d, cx, y, text, fnt, fill, sp=0):
+    """Centred, with optional letter spacing."""
+    w = tracked_w(d, text, fnt, sp)
+    tracked(d, (cx - w / 2, y), text, fnt, fill, sp)
+    return w
+
+
+def pill(base, cx, y, w, h, label, fnt, bg, fg, arrow=True):
+    """A button, with the arrow drawn rather than typed."""
+    d = ImageDraw.Draw(base)
+    d.rounded_rectangle([cx - w / 2, y, cx + w / 2, y + h], radius=h // 2, fill=bg)
+    tw = d.textlength(label, font=fnt)
+    ax = h * 0.30 if arrow else 0
+    tx = cx - (tw + ax) / 2
+    d.text((tx, y + (h - fnt.size * 1.32) / 2), label, font=fnt, fill=fg)
+    if arrow:
+        a0, ay, r = tx + tw + h * 0.18, y + h / 2, h * 0.20
+        wd = max(2, round(h * 0.035))
+        d.line([(a0, ay), (a0 + r, ay)], fill=fg, width=wd)
+        d.line([(a0 + r * 0.6, ay - r * 0.42), (a0 + r, ay)], fill=fg, width=wd)
+        d.line([(a0 + r * 0.6, ay + r * 0.42), (a0 + r, ay)], fill=fg, width=wd)
+    return base
+
+
 # ---------------------------------------------------------------- layouts
 
 def build_og(ride, medal, done, goal, rng, raised, money_goal):
@@ -410,54 +434,62 @@ def typeblock(base, x, y, W, done, goal, raised, donors, allriders, scale=1.0,
     return base
 
 
-def build_square(ride, medal, done, goal, rng, raised, money_goal, donors, allriders=0):
-    W, H, L = 1080, 1080, 72
-    PH = 540
-    base = Image.new("RGB", (W, H), DARK)
-    base.paste(cover(medal, W, PH, 0.5, 0.28), (0, 0))
-    base = panel(base, PH, H, W, fade=150)
-    base = typeblock(base, L, PH + 40, W, done, goal, raised, donors, allriders,
-                     scale=0.86, cta=False, right=W - L - 334)
-    base = inset(base, ride, (W - L - 300, H - 250, 300, 225))
-    return base
+def build_square(ride, medal, done, goal, rng, raised, money_goal, donors, allriders=0,
+                 k=2):
+    """LinkedIn. Same language as the story, but left aligned and with no
+    donate button: the link goes in the post text there, so a button in the
+    image would be a button nobody can press."""
+    P = lambda v: round(v * k)
+    W = H = P(1080)
+    L = P(72)
+    PHOTO = P(530)
+    base = Image.new("RGB", (W, H), (7, 9, 14))
 
+    # A wide band needs different framing from the tall card in the story. The
+    # story's 22% pre-crop applied here pushed the window down past his face,
+    # so this takes the whole frame and picks the vertical window instead: it
+    # lands between about 27% and 64%, which is his face down through the medal.
+    base.paste(cover(medal, W, PHOTO, 0.5, 0.427), (0, 0))
+    base = panel(base, PHOTO, H, W, fade=P(150))
 
-def ctext(d, cx, y, text, fnt, fill, sp=0):
-    """Centred, with optional letter spacing."""
-    w = tracked_w(d, text, fnt, sp)
-    tracked(d, (cx - w / 2, y), text, fnt, fill, sp)
-    return w
-
-
-def skewbar(base, cx, y, w, h, pct, lean=14):
-    """A leaning progress track, the shape the site uses."""
-    pad = lean
-    strip = Image.new("RGBA", (w + pad * 2, h), (0, 0, 0, 0))
-    sd = ImageDraw.Draw(strip)
-    sd.polygon([(pad, 0), (w + pad, 0), (w + pad - lean, h), (pad - lean, h)],
-               fill=(30, 36, 52, 255))
-    fw = max(0, int(w * pct))
-    if fw:
-        sd.polygon([(pad, 0), (pad + fw, 0), (pad + fw - lean, h), (pad - lean, h)],
-                   fill=(109, 130, 255, 255))
-    base.paste(strip, (int(cx - w / 2 - pad), y), strip)
-    return base
-
-
-def pill(base, cx, y, w, h, label, fnt, bg, fg, arrow=True):
-    """A button, with the arrow drawn rather than typed."""
     d = ImageDraw.Draw(base)
-    d.rounded_rectangle([cx - w / 2, y, cx + w / 2, y + h], radius=h // 2, fill=bg)
-    tw = d.textlength(label, font=fnt)
-    ax = h * 0.30 if arrow else 0
-    tx = cx - (tw + ax) / 2
-    d.text((tx, y + (h - fnt.size * 1.32) / 2), label, font=fnt, fill=fg)
-    if arrow:
-        a0, ay, r = tx + tw + h * 0.18, y + h / 2, h * 0.20
-        wd = max(2, round(h * 0.035))
-        d.line([(a0, ay), (a0 + r, ay)], fill=fg, width=wd)
-        d.line([(a0 + r * 0.6, ay - r * 0.42), (a0 + r, ay)], fill=fg, width=wd)
-        d.line([(a0 + r * 0.6, ay + r * 0.42), (a0 + r, ay)], fill=fg, width=wd)
+    fl, fb = sf(P(42), "Thin"), sf(P(42), "Heavy")
+    d.text((L, P(572)), "Riding for a world", font=fl, fill=(245, 246, 248))
+    wsp = d.textlength("with ", font=fl)
+    d.text((L, P(622)), "with ", font=fl, fill=(245, 246, 248))
+    gradtext(base, L + wsp, P(622), "less cancer.", fb, (109, 130, 255), (169, 182, 255))
+
+    num = str(int(round(done)))
+    base, nw = milesnum(base, L, P(694), num, P(112), align="left")
+    d = ImageDraw.Draw(base)
+    tracked(d, (L + nw + P(22), P(764)), "OF %d MILES  \u00b7  %d%%"
+            % (goal, round(done / goal * 100)), sf(P(27), "Bold"), (138, 147, 171), P(5))
+
+    IW, IH = P(300), P(225)
+    IX, IY = W - L - IW, P(706)
+    base = inset(base, ride, (IX, IY, IW, IH), radius=P(18))
+    d = ImageDraw.Draw(base)
+
+    permile = ("$%.2f a mile" % (raised / done)) if done else ""
+    d.text((L, P(862)), "$%s raised  \u00b7  %d donors  \u00b7  %s"
+           % (format(raised, ","), donors, permile), font=sf(P(30), "Medium"),
+           fill=(255, 255, 255))
+    d.text((L, P(906)), "Every ride verified on Strava", font=sf(P(23), "Regular"),
+           fill=(124, 134, 154))
+    if allriders:
+        d.text((L, P(940)), "$%s raised across the whole challenge" % format(allriders, ","),
+               font=sf(P(22), "Regular"), fill=(96, 105, 124))
+
+    lab, flab = "IRONMAN 70.3 NEXT", sf(P(21), "Semibold")
+    mh_i = P(26)
+    mw_i = round(40 * mh_i / 34.0)
+    mdot(base, L, H - P(62), mh_i)
+    d = ImageDraw.Draw(base)
+    tracked(d, (L + mw_i + P(14), H - P(59)), lab, flab, (120, 129, 148), P(2.4))
+    d.text((W - L - d.textlength("vnaidu16.github.io/vn-ride-for-acs",
+            font=sf(P(21), "Regular")), H - P(59)),
+           "vnaidu16.github.io/vn-ride-for-acs", font=sf(P(21), "Regular"),
+           fill=(110, 120, 140))
     return base
 
 
@@ -625,7 +657,7 @@ def main():
          build_post(ride, medal, done, goal, raised, donors, allriders), 95),
         ("og.jpg", build_og(ride, medal, done, goal, rng, raised, money_goal), 88),
         ("share-square.jpg",
-         build_square(ride, medal, done, goal, rng, raised, money_goal, donors, allriders), 90),
+         build_square(ride, medal, done, goal, rng, raised, money_goal, donors, allriders), 95),
         ("share-story.jpg",
          build_story(ride, medal, done, goal, rng, raised, money_goal, donors, allriders), 95),
     ]
