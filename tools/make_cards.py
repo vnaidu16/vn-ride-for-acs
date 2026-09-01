@@ -327,15 +327,83 @@ def build_post(ride, medal, done, goal, raised, donors, allriders):
     return base
 
 
+def ctext(d, cx, y, text, fnt, fill, sp=0):
+    """Centred, with optional letter spacing."""
+    w = tracked_w(d, text, fnt, sp)
+    tracked(d, (cx - w / 2, y), text, fnt, fill, sp)
+    return w
+
+
+def skewbar(base, cx, y, w, h, pct, lean=14):
+    """The website's progress track: a leaning parallelogram, blue on dark."""
+    pad = lean
+    strip = Image.new("RGBA", (w + pad * 2, h), (0, 0, 0, 0))
+    sd = ImageDraw.Draw(strip)
+    sd.polygon([(pad, 0), (w + pad, 0), (w + pad - lean, h), (pad - lean, h)],
+               fill=(30, 36, 52, 255))
+    fw = max(0, int(w * pct))
+    if fw:
+        sd.polygon([(pad, 0), (pad + fw, 0), (pad + fw - lean, h), (pad - lean, h)],
+                   fill=(109, 130, 255, 255))
+    base.paste(strip, (int(cx - w / 2 - pad), y), strip)
+    return base
+
+
 def build_story(ride, medal, done, goal, rng, raised, money_goal, donors, allriders=0):
-    W, H, L = 1080, 1920, 84
-    PH = 1000
-    base = Image.new("RGB", (W, H), DARK)
-    base.paste(cover(medal, W, PH, 0.5, 0.26), (0, 0))
-    base = panel(base, PH, H, W, fade=210)
-    base = typeblock(base, L, PH + 70, W, done, goal, raised, donors, allriders,
-                     scale=1.0, cta=True)
-    base = inset(base, ride, (W - L - 300, PH - 250, 300, 225))
+    """Rebuilt to match the story V actually liked: the photo full bleed, one
+    big white number over it, and a compact stack of facts on the darkened
+    lower third. No panels, no cropping the photo into a strip."""
+    W, H = 1080, 1920
+    CX = W // 2
+    BIKE_H, MEDAL_END = 380, 1120
+    base = Image.new("RGB", (W, H), (5, 7, 11))
+
+    # Bike small across the top, Odin large beneath it as the one that carries
+    # the post. The type sits on the lower part of Odin once it is dark enough,
+    # and on flat ground below that.
+    base.paste(cover(ride, W, BIKE_H, 0.32, 0.30), (0, 0))
+    base.paste(cover(medal, W, MEDAL_END - BIKE_H, 0.5, 0.28), (0, BIKE_H))
+
+    # Only the last stretch of the photo fades out, so the medal in his hand is
+    # never sat on. The number goes underneath on flat ground instead.
+    grad = Image.new("L", (W, MEDAL_END), 0)
+    gd = ImageDraw.Draw(grad)
+    for i in range(MEDAL_END):
+        t = max(0.0, (i - 990) / 130.0)
+        gd.line([(0, i), (W, i)], fill=int(min(1.0, t) ** 1.1 * 252))
+    base.paste(Image.new("RGB", (W, MEDAL_END), (5, 7, 11)), (0, 0), grad)
+
+    pct = done / goal
+    num = str(int(round(done)))
+    fn = font(F_BLACK, 178)
+    d = ImageDraw.Draw(base)
+    d.text((CX - d.textlength(num, font=fn) / 2, 1128), num, font=fn, fill=(255, 255, 255))
+
+    ctext(d, CX, 1336, "OF %d MILES  \u00b7  %d%%" % (goal, round(pct * 100)),
+          font(F_BLACK, 42), (232, 236, 244), 1.5)
+    base = skewbar(base, CX, 1400, 760, 18, min(1.0, pct))
+    d = ImageDraw.Draw(base)
+
+    permile = ("$%.2f A MILE" % (raised / done)) if done else ""
+    ctext(d, CX, 1450, "$%s RAISED  \u00b7  %d DONORS  \u00b7  %s"
+          % (format(raised, ","), donors, permile), font(F_BLACK, 36), (255, 255, 255), 0.5)
+    ctext(d, CX, 1500, "EVERY RIDE VERIFIED ON STRAVA", font(F_BOLD, 26), (128, 146, 255), 1.2)
+    if allriders:
+        ctext(d, CX, 1538, "$%s RAISED ACROSS THE WHOLE CHALLENGE" % format(allriders, ","),
+              font(F_BOLD, 24), (132, 142, 162), 1.0)
+
+    fc = font(F_BLACK, 38)
+    lab = "DONATE ON GOFUNDME  \u2192"
+    cw = tracked_w(d, lab, fc, 1.0)
+    d.rounded_rectangle([CX - cw / 2 - 40, 1590, CX + cw / 2 + 40, 1674], radius=42, fill=GREEN)
+    tracked(d, (CX - cw / 2, 1612), lab, fc, (5, 20, 12), 1.0)
+
+    # 1686 to 1772 stays clear: that is where the link sticker goes. On the old
+    # one the sticker landed on top of the button.
+
+    ctext(d, CX, 1786, "Cancer doesn't cut corners.", font(F_BLACK, 37), (255, 77, 109))
+    ctext(d, CX, 1832, "Neither do we.", font(F_BLACK, 37), (255, 255, 255))
+    ctext(d, CX, 1874, "vnaidu16.github.io/vn-ride-for-acs", font(F_BOLD, 25), (120, 130, 150))
     return base
 
 
