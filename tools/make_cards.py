@@ -40,7 +40,8 @@ FONTS = "/System/Library/Fonts/Supplemental/"
 F_BOLD = FONTS + "Arial Bold.ttf"
 AVENIR = "/System/Library/Fonts/Avenir Next.ttc"
 AV_HEAVY, AV_BOLD, AV_DEMI = 8, 0, 2
-SFNS = "/System/Library/Fonts/SFNS.ttf"   # SF Pro, the system face
+SFNS = "/System/Library/Fonts/SFNS.ttf"         # SF Pro, the system face
+SFNS_IT = "/System/Library/Fonts/SFNSItalic.ttf"
 F_BLACK = FONTS + "Arial Black.ttf"
 F_ITAL = FONTS + "Arial Bold Italic.ttf"
 
@@ -60,6 +61,45 @@ def font(path, size, index=None):
 def av(size, weight=None):
     """Avenir Next. Kept for the layouts that still use it."""
     return font(AVENIR, size, AV_HEAVY if weight is None else weight)
+
+
+def sfi(size, weight="Black Italic"):
+    """The italic cut. index.html sets .miles italic at weight 900, so the big
+    number has to be italic here too or it is simply a different typeface from
+    the one on the page."""
+    try:
+        f = ImageFont.truetype(SFNS_IT, size)
+        f.set_variation_by_name(weight)
+        return f
+    except Exception:
+        return sf(size, "Black")
+
+
+def milesnum(base, cx, y, text, size, track=-0.053, align="center"):
+    """The number as the site draws it: italic 900, tight negative tracking,
+    and a white to periwinkle gradient down the glyphs rather than flat white."""
+    fnt = sfi(size)
+    d = ImageDraw.Draw(base)
+    sp = size * track
+    w = sum(d.textlength(c, font=fnt) for c in text) + sp * (len(text) - 1)
+    h = int(size * 1.25)
+    lay = Image.new("L", (int(w) + size, h), 0)
+    ld = ImageDraw.Draw(lay)
+    x = 0
+    for c in text:
+        ld.text((x, 0), c, font=fnt, fill=255)
+        x += d.textlength(c, font=fnt) + sp
+    grad = Image.new("RGB", (lay.width, h))
+    gd = ImageDraw.Draw(grad)
+    for i in range(h):
+        t = min(1.0, max(0.0, (i / h - 0.25) / 0.65))
+        gd.line([(0, i), (lay.width, i)],
+                fill=(round(255 + (143 - 255) * t),
+                      round(255 + (161 - 255) * t),
+                      round(255 + (255 - 255) * t)))
+    x0 = cx if align == "left" else cx - w / 2
+    base.paste(grad, (int(x0), int(y)), lay)
+    return base, w
 
 
 def sf(size, weight="Bold"):
@@ -219,11 +259,10 @@ def build_og(ride, medal, done, goal, rng, raised, money_goal):
     d.text((L, 199), "with ", font=fh, fill=WHITE)
     d.text((L + d.textlength("with ", font=fh), 199), "less cancer.", font=fh, fill=BLUE)
 
-    fn = sf(140, "Black")
     num = str(int(round(done)))
-    base = glow_number(base, (L, 278), num, fn)
+    base, nw = milesnum(base, L, 268, num, 148, align="left")
     d = ImageDraw.Draw(base)
-    tracked(d, (L + d.textlength(num, font=fn) + 24, 372), "OF %d MILES" % goal,
+    tracked(d, (L + nw + 26, 372), "OF %d MILES" % goal,
             sf(23, "Bold"), (150, 160, 180), 3.0)
 
     base = bar(base, L, seam - 40, 452, 12, min(1.0, done / goal))
@@ -278,12 +317,11 @@ def typeblock(base, x, y, W, done, goal, raised, donors, allriders, scale=1.0,
     tracked(d, (x, y + S(40)), "BENEFITING THE AMERICAN CANCER SOCIETY",
             sf(S(18), "Medium"), (150, 159, 178), S(2.6))
 
-    fn = sf(S(150), "Black")
     num = str(int(round(done)))
-    ny = y + S(88)
-    base = glow_number(base, (x, ny), num, fn)
+    ny = y + S(80)
+    base, nw = milesnum(base, x, ny, num, S(152), align="left")
     d = ImageDraw.Draw(base)
-    tracked(d, (x + d.textlength(num, font=fn) + S(24), ny + S(96)),
+    tracked(d, (x + nw + S(26), ny + S(104)),
             "OF %d MILES" % goal, sf(S(26), "Bold"), (150, 160, 180), S(3.2))
     yy = ny + S(178)
 
@@ -409,8 +447,8 @@ def build_story(ride, medal, done, goal, rng, raised, money_goal, donors, allrid
     pct = done / goal
     num = str(int(round(done)))
     d = ImageDraw.Draw(base)
-    fn = sf(190, "Black")
-    d.text((CX - d.textlength(num, font=fn) / 2, 348), num, font=fn, fill=(255, 255, 255))
+    base, _ = milesnum(base, CX, 348, num, 200)
+    d = ImageDraw.Draw(base)
     ctext(d, CX, 572, "OF %d MILES  \u00b7  %d%%" % (goal, round(pct * 100)),
           sf(42, "Bold"), (226, 231, 240), 0.5)
 
