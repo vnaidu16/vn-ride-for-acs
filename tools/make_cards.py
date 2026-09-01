@@ -63,6 +63,40 @@ def av(size, weight=None):
     return font(AVENIR, size, AV_HEAVY if weight is None else weight)
 
 
+def graded_blur(im, soft=0.50, hard=0.74, mx=17):
+    """Sharp at the top, easing into full blur at the bottom, rather than one
+    flat blur over the whole thing. Three levels crossfaded down the frame: a
+    straight two way blend reads as a ghost through the middle."""
+    h = im.height
+    out = im.copy()
+    for lo, hi, radius in ((soft, hard + 0.10, mx * 0.42), (hard, 0.99, mx)):
+        layer = im.filter(ImageFilter.GaussianBlur(radius))
+        mask = Image.new("L", im.size, 0)
+        md = ImageDraw.Draw(mask)
+        for y in range(h):
+            t = (y / h - lo) / max(1e-6, hi - lo)
+            md.line([(0, y), (im.width, y)], fill=int(255 * min(1.0, max(0.0, t)) ** 1.1))
+        out = Image.composite(layer, out, mask)
+    return out
+
+
+def gradtext(base, x, y, text, fnt, c0, c1):
+    """Horizontal gradient inside the glyphs, the way h1 b is filled on the
+    site: #6d82ff to #a9b6ff, left to right."""
+    d = ImageDraw.Draw(base)
+    w = int(d.textlength(text, font=fnt)) + 4
+    h = int(fnt.size * 1.45)
+    lay = Image.new("L", (w, h), 0)
+    ImageDraw.Draw(lay).text((0, 0), text, font=fnt, fill=255)
+    grad = Image.new("RGB", (w, h))
+    gd = ImageDraw.Draw(grad)
+    for i in range(w):
+        t = i / max(1, w - 1)
+        gd.line([(i, 0), (i, h)], fill=tuple(round(c0[k] + (c1[k] - c0[k]) * t) for k in range(3)))
+    base.paste(grad, (int(x), int(y)), lay)
+    return w - 4
+
+
 def sfi(size, weight="Black Italic"):
     """The italic cut. index.html sets .miles italic at weight 900, so the big
     number has to be italic here too or it is simply a different typeface from
@@ -430,31 +464,49 @@ def pill(base, cx, y, w, h, label, fnt, bg, fg, arrow=True):
 def build_story(ride, medal, done, goal, rng, raised, money_goal, donors, allriders=0):
     W, H = 1080, 1920
     CX = W // 2
-    TOP_H, CARD_Y = 300, 1240
+    TOP_H, CARD_Y = 400, 1240
     base = Image.new("RGB", (W, H), (7, 9, 14))
 
     # Blurred, but still legibly a person on a bike. The old version blurred it
     # into grey mush and read like a mistake.
-    top = cover(ride, W, TOP_H, 0.32, 0.30).filter(ImageFilter.GaussianBlur(9))
-    top = ImageEnhance.Brightness(top).enhance(0.88)
+    top = graded_blur(cover(ride, W, TOP_H, 0.32, 0.26))
+    top = ImageEnhance.Brightness(top).enhance(0.93)
     base.paste(top, (0, 0))
+    cap = Image.new("L", (W, 260), 0)
+    cd0 = ImageDraw.Draw(cap)
+    for i in range(260):
+        cd0.line([(0, i), (W, i)], fill=int(200 * (1 - i / 260) ** 0.9))
+    base.paste(Image.new("RGB", (W, 260), (7, 9, 14)), (0, 0), cap)
     fade = Image.new("L", (W, 150), 0)
     fd = ImageDraw.Draw(fade)
     for i in range(150):
         fd.line([(0, i), (W, i)], fill=int(255 * (i / 150) ** 0.75))
     base.paste(Image.new("RGB", (W, 150), (7, 9, 14)), (0, TOP_H - 150), fade)
 
+    # The site's h1: weight 200, with the bold half filled by a blue gradient.
+    d = ImageDraw.Draw(base)
+    fl = sf(56, "Thin")
+    fb = sf(56, "Heavy")
+    l1 = "Riding for a world"
+    d.text((CX - d.textlength(l1, font=fl) / 2, 78), l1, font=fl, fill=(245, 246, 248))
+    w_with = d.textlength("with ", font=fl)
+    w_bold = d.textlength("less cancer.", font=fb)
+    x2 = CX - (w_with + w_bold) / 2
+    d.text((x2, 146), "with ", font=fl, fill=(245, 246, 248))
+    gradtext(base, x2 + w_with, 146, "less cancer.", fb, (109, 130, 255), (169, 182, 255))
+
     pct = done / goal
     num = str(int(round(done)))
     d = ImageDraw.Draw(base)
-    base, _ = milesnum(base, CX, 348, num, 200)
+    base, _ = milesnum(base, CX, 430, num, 200)
     d = ImageDraw.Draw(base)
-    ctext(d, CX, 572, "OF %d MILES  \u00b7  %d%%" % (goal, round(pct * 100)),
-          sf(42, "Bold"), (226, 231, 240), 0.5)
+    # .goal on the site: 700, letter-spacing 4px at 17px, #8a93ab
+    ctext(d, CX, 654, "OF %d MILES  \u00b7  %d%%" % (goal, round(pct * 100)),
+          sf(38, "Bold"), (138, 147, 171), 8.5)
 
     # A plain rounded track, sized to the type above it, instead of a skewed
     # slash floating on its own.
-    BW, BH, BY = 620, 10, 646
+    BW, BH, BY = 620, 8, 726
     d.rounded_rectangle([CX - BW / 2, BY, CX + BW / 2, BY + BH], radius=BH // 2,
                         fill=(32, 38, 54))
     fwid = int(BW * min(1.0, pct))
@@ -463,21 +515,21 @@ def build_story(ride, medal, done, goal, rng, raised, money_goal, donors, allrid
                             radius=BH // 2, fill=(255, 255, 255))
 
     permile = ("$%.2f a mile" % (raised / done)) if done else ""
-    ctext(d, CX, 704, "$%s raised  \u00b7  %d donors  \u00b7  %s"
-          % (format(raised, ","), donors, permile), sf(36, "Bold"), (255, 255, 255), 0.2)
-    ctext(d, CX, 756, "Every ride verified on Strava", sf(27, "Medium"), (124, 134, 154), 0.4)
+    ctext(d, CX, 784, "$%s raised  \u00b7  %d donors  \u00b7  %s"
+          % (format(raised, ","), donors, permile), sf(35, "Medium"), (255, 255, 255), 0.2)
+    ctext(d, CX, 834, "Every ride verified on Strava", sf(26, "Regular"), (124, 134, 154), 0.4)
     if allriders:
-        ctext(d, CX, 798, "$%s raised across the whole challenge" % format(allriders, ","),
-              sf(26, "Medium"), (96, 105, 124), 0.4)
+        ctext(d, CX, 876, "$%s raised across the whole challenge" % format(allriders, ","),
+              sf(25, "Regular"), (96, 105, 124), 0.4)
 
-    base = pill(base, CX, 878, 560, 88, "Donate on GoFundMe", sf(36, "Semibold"),
+    base = pill(base, CX, 946, 548, 84, "Donate on GoFundMe", sf(34, "Semibold"),
                 (0, 229, 124), (6, 20, 13))
 
     # 978 to 1064 stays clear for the link sticker.
 
-    ctext(d, CX, 1086, "Cancer doesn't cut corners.", sf(37, "Bold"), (255, 77, 109))
-    ctext(d, CX, 1132, "Neither do we.", sf(37, "Bold"), (255, 255, 255))
-    ctext(d, CX, 1186, "vnaidu16.github.io/vn-ride-for-acs", sf(25, "Medium"), (110, 120, 140))
+    ctext(d, CX, 1102, "Cancer doesn't cut corners.", sf(35, "Semibold"), (255, 77, 109))
+    ctext(d, CX, 1146, "Neither do we.", sf(35, "Semibold"), (255, 255, 255))
+    ctext(d, CX, 1196, "vnaidu16.github.io/vn-ride-for-acs", sf(24, "Regular"), (110, 120, 140))
 
     # Two cards at the foot. Half the width is almost exactly the finisher
     # photo's own aspect ratio, so it is barely cropped at all.
@@ -493,8 +545,8 @@ def build_story(ride, medal, done, goal, rng, raised, money_goal, donors, allrid
     card = Image.new("RGB", (CWd, CH), (15, 18, 27))
     cd = ImageDraw.Draw(card)
     cd.rounded_rectangle([0, 0, CWd - 1, CH - 1], radius=rad, outline=(40, 47, 66), width=2)
-    cd.text((30, 34), "Thank you", font=sf(32, "Bold"), fill=(255, 255, 255))
-    cd.text((30, 78), "%d people funded this" % donors, font=sf(23, "Medium"),
+    cd.text((30, 34), "Thank you", font=sf(31, "Semibold"), fill=(255, 255, 255))
+    cd.text((30, 78), "%d people funded this" % donors, font=sf(22, "Regular"),
             fill=(120, 130, 150))
     # Faint rules so the space reads as a list waiting to be filled rather than
     # an empty box. V tags the donors over these.
