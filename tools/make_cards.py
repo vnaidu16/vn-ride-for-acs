@@ -4,6 +4,8 @@ Replaces make_og.py, which only made the link preview. Three outputs now:
 
   og.jpg            1200x630   link preview, used by the site, LinkedIn, iMessage
   share-square.jpg  1080x1080  LinkedIn or Instagram feed post
+  share-post.jpg    1080x1350  Instagram feed post, 4:5, with an empty band at
+                               the foot for a link sticker instead of a button
   share-story.jpg   1080x1920  Instagram story
 
 All three read the same sources the page reads, so they cannot drift from it:
@@ -160,6 +162,13 @@ def read_ride():
     return num("done"), num("goal"), rng
 
 
+def read_collective():
+    """The whole challenge's total, which is not this rider's total."""
+    src = open(os.path.join(ROOT, "index.html"), encoding="utf-8").read()
+    m = re.search(r"allRiders:\s*(\d+)", src)
+    return int(m.group(1)) if m else 0
+
+
 def read_money():
     try:
         d = json.load(open(os.path.join(ROOT, "data.json")))
@@ -253,7 +262,7 @@ def build_square(ride, medal, done, goal, rng, raised, money_goal, donors):
     return base
 
 
-def build_story(ride, medal, done, goal, rng, raised, money_goal, donors):
+def build_story(ride, medal, done, goal, rng, raised, money_goal, donors, allriders=0):
     W, H, L = 1080, 1920, 84
     base = Image.new("RGB", (W, H), DARK)
     top = 760
@@ -284,14 +293,66 @@ def build_story(ride, medal, done, goal, rng, raised, money_goal, donors):
     base = bar(base, L, W - L, H - 268, 16, min(1.0, done / goal))
     d = ImageDraw.Draw(base)
     fs = font(F_BOLD, 28)
-    d.text((L, H - 226), "$%s raised  ·  %d donors" % (format(raised, ","), donors),
+    d.text((L, H - 236), "$%s raised  ·  %d donors" % (format(raised, ","), donors),
            font=fs, fill=GREEN)
+    if allriders:
+        d.text((L, H - 198),
+               "$%s across every rider in the challenge" % format(allriders, ","),
+               font=font(F_BOLD, 19), fill=(122, 132, 152))
 
     fc = font(F_BLACK, 30)
     lab = "DONATE ON GOFUNDME"
     cw = tracked_w(d, lab, fc, 2.6)
     d.rounded_rectangle([L, H - 168, L + cw + 72, H - 92], radius=38, fill=GREEN)
     tracked(d, (L + 36, H - 147), lab, fc, (6, 18, 12), 2.6)
+    return base
+
+
+def build_post(ride, medal, done, goal, raised, donors, allriders):
+    """Odin at the top, the bike at the foot, and a deliberately empty band
+    below that. Instagram feed posts cannot carry a link, so the space is left
+    for a sticker rather than filled with a button that would not work."""
+    W, H, L = 1080, 1350, 76
+    # Photo, then a band that carries all the type, then the bike, then nothing.
+    # The number used to sit over the medal shot and landed square on his face.
+    PHOTO, PIC, BLANK = 520, 884, 1124
+    base = Image.new("RGB", (W, H), DARK)
+
+    base.paste(cover(medal, W, PHOTO, 0.5, 0.28), (0, 0))
+    base = scrim(base, (0, PHOTO - 200, W, PHOTO), 1.0, axis="y", invert=True)
+    base = scrim(base, (0, 0, W, 200), 0.85, axis="y")
+
+    d = ImageDraw.Draw(base)
+    tracked(d, (L, 58), "CHALLENGE COMPLETE", font(F_BLACK, 23), GREEN, 3.4)
+    tracked(d, (L, 100), "BENEFITING THE AMERICAN CANCER SOCIETY",
+            font(F_BOLD, 18), (198, 206, 222), 2.6)
+
+    fn = font(F_ITAL, 132)
+    num = str(int(round(done)))
+    base = glow_number(base, (L, PHOTO + 14), num, fn)
+    d = ImageDraw.Draw(base)
+    tracked(d, (L + d.textlength(num, font=fn) + 24, PHOTO + 96), "OF %d MILES" % goal,
+            font(F_BLACK, 25), (170, 180, 200), 3.2)
+
+    fh = font(F_BLACK, 43)
+    d.text((L, PHOTO + 176), "Riding for a world", font=fh, fill=WHITE)
+    d.text((L, PHOTO + 224), "with ", font=fh, fill=WHITE)
+    d.text((L + d.textlength("with ", font=fh), PHOTO + 224), "less cancer.", font=fh, fill=BLUE)
+
+    d.text((L, PHOTO + 292), "$%s raised here  \u00b7  %d donors"
+           % (format(raised, ","), donors), font=font(F_BOLD, 22), fill=GREEN)
+    if allriders:
+        d.text((L, PHOTO + 326),
+               "$%s raised across every rider in the challenge" % format(allriders, ","),
+               font=font(F_BOLD, 17), fill=(116, 126, 146))
+
+    base.paste(cover(ride, W, BLANK - PIC, 0.32, 0.34), (0, PIC))
+
+    # Left empty on purpose: a feed post cannot carry a link, so this is room
+    # for a sticker rather than a button that would not do anything.
+    d = ImageDraw.Draw(base)
+    d.rectangle([0, BLANK, W, H], fill=DARK)
+    base = scrim(base, (0, BLANK - 80, W, BLANK), 1.0, axis="y", invert=True)
     return base
 
 
@@ -311,13 +372,16 @@ def main():
         print("og.jpg is current at v=%s" % version)
         return
 
+    allriders = read_collective()
     ride, medal = pick(RIDE_IMG), pick(MEDAL_IMG)
     jobs = [
+        ("share-post.jpg",
+         build_post(ride, medal, done, goal, raised, donors, allriders), 90),
         ("og.jpg", build_og(ride, medal, done, goal, rng, raised, money_goal), 88),
         ("share-square.jpg",
          build_square(ride, medal, done, goal, rng, raised, money_goal, donors), 90),
         ("share-story.jpg",
-         build_story(ride, medal, done, goal, rng, raised, money_goal, donors), 90),
+         build_story(ride, medal, done, goal, rng, raised, money_goal, donors, allriders), 90),
     ]
     for name, img, q in jobs:
         p = os.path.join(ROOT, name)
