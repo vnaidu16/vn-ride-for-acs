@@ -45,8 +45,8 @@ SFNS_IT = "/System/Library/Fonts/SFNSItalic.ttf"
 F_BLACK = FONTS + "Arial Black.ttf"
 F_ITAL = FONTS + "Arial Bold Italic.ttf"
 
-RIDE_IMG = ["hero-2600.avif", "hero-1120.jpg", "hero.jpg"]
-MEDAL_IMG = ["gal-medal-1100.avif", "gal-medal-720.avif", "gal-medal.jpg"]
+RIDE_IMG = ["hero-3000.avif", "hero-2600.avif", "hero.jpg"]
+MEDAL_IMG = ["gal-medal-2400.avif", "gal-medal-1600.avif", "gal-medal.jpg"]
 
 
 def font(path, size, index=None):
@@ -95,6 +95,28 @@ def gradtext(base, x, y, text, fnt, c0, c1):
         gd.line([(i, 0), (i, h)], fill=tuple(round(c0[k] + (c1[k] - c0[k]) * t) for k in range(3)))
     base.paste(grad, (int(x), int(y)), lay)
     return w - 4
+
+
+MDOT_RED = (237, 28, 36)
+
+
+def mdot(base, x, y, h, colour=MDOT_RED):
+    """The IRONMAN mark, same geometry as the SVG in index.html: a disc over an
+    M drawn as a stroked polyline on a 40x34 grid. Drawn oversampled and scaled
+    down, because a 7.2 unit stroke at this size is a couple of pixels wide and
+    aliases badly otherwise."""
+    OS = 8
+    u = h * OS / 34.0
+    w = round(40 * u)
+    lay = Image.new("L", (w, round(34 * u)), 0)
+    ld = ImageDraw.Draw(lay)
+    ld.ellipse([(20 - 6.1) * u, (6.6 - 6.1) * u, (20 + 6.1) * u, (6.6 + 6.1) * u], fill=255)
+    pts = [(4 * u, 32.5 * u), (4 * u, 17.6 * u), (20 * u, 28.8 * u),
+           (36 * u, 17.6 * u), (36 * u, 32.5 * u)]
+    ld.line(pts, fill=255, width=round(7.2 * u), joint="curve")
+    lay = lay.resize((round(w / OS), round(34 * u / OS)), Image.LANCZOS)
+    base.paste(Image.new("RGB", lay.size, colour), (round(x), round(y)), lay)
+    return lay.size[0]
 
 
 def sfi(size, weight="Black Italic"):
@@ -400,27 +422,6 @@ def build_square(ride, medal, done, goal, rng, raised, money_goal, donors, allri
     return base
 
 
-def build_post(ride, medal, done, goal, raised, donors, allriders):
-    """Odin big, the bike at the foot at its own shape, and an empty band under
-    it. A feed post cannot carry a link, so that space is for a sticker."""
-    W, H, L = 1080, 1350, 76
-    PH, BLANK = 660, 1160
-    IW, IH = 320, 240
-    IX = W - L - IW
-    base = Image.new("RGB", (W, H), DARK)
-    # 0.30 keeps the medal in his hand inside the frame; 0.24 cropped it off.
-    base.paste(cover(medal, W, PH, 0.5, 0.30), (0, 0))
-    base = panel(base, PH, BLANK, W, fade=170)
-    # Starts high enough that the last line clears the blank band; it was being
-    # sliced in half by it.
-    base = typeblock(base, L, PH + 44, W, done, goal, raised, donors, allriders,
-                     scale=0.86, cta=False, right=IX - 34)
-    base = inset(base, ride, (IX, BLANK - 300, IW, IH))
-    d = ImageDraw.Draw(base)
-    d.rectangle([0, BLANK, W, H], fill=DARK)
-    return base
-
-
 def ctext(d, cx, y, text, fnt, fill, sp=0):
     """Centred, with optional letter spacing."""
     w = tracked_w(d, text, fnt, sp)
@@ -429,7 +430,7 @@ def ctext(d, cx, y, text, fnt, fill, sp=0):
 
 
 def skewbar(base, cx, y, w, h, pct, lean=14):
-    """The website's progress track: a leaning parallelogram, blue on dark."""
+    """A leaning progress track, the shape the site uses."""
     pad = lean
     strip = Image.new("RGBA", (w + pad * 2, h), (0, 0, 0, 0))
     sd = ImageDraw.Draw(strip)
@@ -444,69 +445,97 @@ def skewbar(base, cx, y, w, h, pct, lean=14):
 
 
 def pill(base, cx, y, w, h, label, fnt, bg, fg, arrow=True):
-    """A button. The arrow is drawn, not typed: Avenir has no glyph for it and
-    it was rendering as a tofu box."""
+    """A button, with the arrow drawn rather than typed."""
     d = ImageDraw.Draw(base)
     d.rounded_rectangle([cx - w / 2, y, cx + w / 2, y + h], radius=h // 2, fill=bg)
     tw = d.textlength(label, font=fnt)
-    ax = 26 if arrow else 0
+    ax = h * 0.30 if arrow else 0
     tx = cx - (tw + ax) / 2
     d.text((tx, y + (h - fnt.size * 1.32) / 2), label, font=fnt, fill=fg)
     if arrow:
-        ax0 = tx + tw + 16
-        ay = y + h / 2
-        d.line([(ax0, ay), (ax0 + 17, ay)], fill=fg, width=3)
-        d.line([(ax0 + 10, ay - 7), (ax0 + 17, ay)], fill=fg, width=3)
-        d.line([(ax0 + 10, ay + 7), (ax0 + 17, ay)], fill=fg, width=3)
+        a0, ay, r = tx + tw + h * 0.18, y + h / 2, h * 0.20
+        wd = max(2, round(h * 0.035))
+        d.line([(a0, ay), (a0 + r, ay)], fill=fg, width=wd)
+        d.line([(a0 + r * 0.6, ay - r * 0.42), (a0 + r, ay)], fill=fg, width=wd)
+        d.line([(a0 + r * 0.6, ay + r * 0.42), (a0 + r, ay)], fill=fg, width=wd)
     return base
 
 
-def build_story(ride, medal, done, goal, rng, raised, money_goal, donors, allriders=0):
-    W, H = 1080, 1920
+def build_post(ride, medal, done, goal, raised, donors, allriders, k=2):
+    """Odin big, the bike inset at the foot, an empty band for a sticker, and
+    the IRONMAN mark small underneath. Rendered at k times feed size."""
+    P = lambda v: round(v * k)
+    W, H, L = P(1080), P(1350), P(76)
+    PH, BLANK = P(660), P(1160)
+    IW, IH = P(320), P(240)
+    IX = W - L - IW
+    base = Image.new("RGB", (W, H), DARK)
+    mw2, mh2 = medal.size
+    tight = medal.crop((round(mw2 * 0.06), round(mh2 * 0.10),
+                        round(mw2 * 0.97), round(mh2 * 0.99)))
+    base.paste(cover(tight, W, PH, 0.5, 0.26), (0, 0))
+    base = panel(base, PH, BLANK, W, fade=P(170))
+    base = typeblock(base, L, PH + P(44), W, done, goal, raised, donors, allriders,
+                     scale=0.86 * k, cta=False, right=IX - P(34))
+    base = inset(base, ride, (IX, BLANK - P(300), IW, IH), radius=P(18))
+    d = ImageDraw.Draw(base)
+    d.rectangle([0, BLANK, W, H], fill=DARK)
+
+    lab, flab = "IRONMAN 70.3 NEXT", sf(P(23), "Semibold")
+    mh = P(30)
+    mw = round(40 * mh / 34.0)
+    tw = tracked_w(d, lab, flab, P(2.6))
+    gx = (W - (mw + P(16) + tw)) / 2
+    mdot(base, gx, H - P(74), mh)
+    d = ImageDraw.Draw(base)
+    tracked(d, (gx + mw + P(16), H - P(70)), lab, flab, (128, 137, 156), P(2.6))
+    return base
+
+
+def build_story(ride, medal, done, goal, rng, raised, money_goal, donors, allriders=0,
+                k=2):
+    """Rendered at k times story size and left there. Instagram downsamples,
+    and downsampling from 2160x3840 is far cleaner than uploading 1080 wide and
+    letting it stretch. Every measurement below is in story points, scaled once.
+    """
+    P = lambda v: round(v * k)
+    W, H = P(1080), P(1920)
     CX = W // 2
-    TOP_H, CARD_Y = 400, 1240
+    TOP_H, CARD_Y = P(400), P(1218)
     base = Image.new("RGB", (W, H), (7, 9, 14))
 
-    # Blurred, but still legibly a person on a bike. The old version blurred it
-    # into grey mush and read like a mistake.
-    top = graded_blur(cover(ride, W, TOP_H, 0.32, 0.26))
+    top = graded_blur(cover(ride, W, TOP_H, 0.32, 0.26), mx=P(17))
     top = ImageEnhance.Brightness(top).enhance(0.93)
     base.paste(top, (0, 0))
-    cap = Image.new("L", (W, 260), 0)
+    cap = Image.new("L", (W, P(260)), 0)
     cd0 = ImageDraw.Draw(cap)
-    for i in range(260):
-        cd0.line([(0, i), (W, i)], fill=int(200 * (1 - i / 260) ** 0.9))
-    base.paste(Image.new("RGB", (W, 260), (7, 9, 14)), (0, 0), cap)
-    fade = Image.new("L", (W, 150), 0)
+    for i in range(P(260)):
+        cd0.line([(0, i), (W, i)], fill=int(200 * (1 - i / P(260)) ** 0.9))
+    base.paste(Image.new("RGB", (W, P(260)), (7, 9, 14)), (0, 0), cap)
+    fade = Image.new("L", (W, P(150)), 0)
     fd = ImageDraw.Draw(fade)
-    for i in range(150):
-        fd.line([(0, i), (W, i)], fill=int(255 * (i / 150) ** 0.75))
-    base.paste(Image.new("RGB", (W, 150), (7, 9, 14)), (0, TOP_H - 150), fade)
+    for i in range(P(150)):
+        fd.line([(0, i), (W, i)], fill=int(255 * (i / P(150)) ** 0.75))
+    base.paste(Image.new("RGB", (W, P(150)), (7, 9, 14)), (0, TOP_H - P(150)), fade)
 
-    # The site's h1: weight 200, with the bold half filled by a blue gradient.
     d = ImageDraw.Draw(base)
-    fl = sf(56, "Thin")
-    fb = sf(56, "Heavy")
+    fl, fb = sf(P(56), "Thin"), sf(P(56), "Heavy")
     l1 = "Riding for a world"
-    d.text((CX - d.textlength(l1, font=fl) / 2, 78), l1, font=fl, fill=(245, 246, 248))
+    d.text((CX - d.textlength(l1, font=fl) / 2, P(78)), l1, font=fl, fill=(245, 246, 248))
     w_with = d.textlength("with ", font=fl)
     w_bold = d.textlength("less cancer.", font=fb)
     x2 = CX - (w_with + w_bold) / 2
-    d.text((x2, 146), "with ", font=fl, fill=(245, 246, 248))
-    gradtext(base, x2 + w_with, 146, "less cancer.", fb, (109, 130, 255), (169, 182, 255))
+    d.text((x2, P(146)), "with ", font=fl, fill=(245, 246, 248))
+    gradtext(base, x2 + w_with, P(146), "less cancer.", fb, (109, 130, 255), (169, 182, 255))
 
     pct = done / goal
     num = str(int(round(done)))
+    base, _ = milesnum(base, CX, P(430), num, P(200))
     d = ImageDraw.Draw(base)
-    base, _ = milesnum(base, CX, 430, num, 200)
-    d = ImageDraw.Draw(base)
-    # .goal on the site: 700, letter-spacing 4px at 17px, #8a93ab
-    ctext(d, CX, 654, "OF %d MILES  \u00b7  %d%%" % (goal, round(pct * 100)),
-          sf(38, "Bold"), (138, 147, 171), 8.5)
+    ctext(d, CX, P(654), "OF %d MILES  \u00b7  %d%%" % (goal, round(pct * 100)),
+          sf(P(38), "Bold"), (138, 147, 171), P(8.5))
 
-    # A plain rounded track, sized to the type above it, instead of a skewed
-    # slash floating on its own.
-    BW, BH, BY = 620, 8, 726
+    BW, BH, BY = P(620), P(8), P(726)
     d.rounded_rectangle([CX - BW / 2, BY, CX + BW / 2, BY + BH], radius=BH // 2,
                         fill=(32, 38, 54))
     fwid = int(BW * min(1.0, pct))
@@ -515,44 +544,49 @@ def build_story(ride, medal, done, goal, rng, raised, money_goal, donors, allrid
                             radius=BH // 2, fill=(255, 255, 255))
 
     permile = ("$%.2f a mile" % (raised / done)) if done else ""
-    ctext(d, CX, 784, "$%s raised  \u00b7  %d donors  \u00b7  %s"
-          % (format(raised, ","), donors, permile), sf(35, "Medium"), (255, 255, 255), 0.2)
-    ctext(d, CX, 834, "Every ride verified on Strava", sf(26, "Regular"), (124, 134, 154), 0.4)
+    ctext(d, CX, P(784), "$%s raised  \u00b7  %d donors  \u00b7  %s"
+          % (format(raised, ","), donors, permile), sf(P(35), "Medium"), (255, 255, 255), P(0.2))
+    ctext(d, CX, P(834), "Every ride verified on Strava",
+          sf(P(26), "Regular"), (124, 134, 154), P(0.4))
     if allriders:
-        ctext(d, CX, 876, "$%s raised across the whole challenge" % format(allriders, ","),
-              sf(25, "Regular"), (96, 105, 124), 0.4)
+        ctext(d, CX, P(876), "$%s raised across the whole challenge" % format(allriders, ","),
+              sf(P(25), "Regular"), (96, 105, 124), P(0.4))
 
-    base = pill(base, CX, 946, 548, 84, "Donate on GoFundMe", sf(34, "Semibold"),
-                (0, 229, 124), (6, 20, 13))
+    base = pill(base, CX, P(946), P(548), P(84), "Donate on GoFundMe",
+                sf(P(34), "Semibold"), (0, 229, 124), (6, 20, 13))
 
-    # 978 to 1064 stays clear for the link sticker.
+    # P(1046) to P(1160): kept clear, and wider than before, for the link sticker.
 
-    ctext(d, CX, 1102, "Cancer doesn't cut corners.", sf(35, "Semibold"), (255, 77, 109))
-    ctext(d, CX, 1146, "Neither do we.", sf(35, "Semibold"), (255, 255, 255))
-    ctext(d, CX, 1196, "vnaidu16.github.io/vn-ride-for-acs", sf(24, "Regular"), (110, 120, 140))
+    ctext(d, CX, P(1174), "Cancer doesn't cut corners.", sf(P(35), "Semibold"), (255, 77, 109))
+    ctext(d, CX, P(1218), "Neither do we.", sf(P(35), "Semibold"), (255, 255, 255))
+    ctext(d, CX, P(1268), "vnaidu16.github.io/vn-ride-for-acs",
+          sf(P(24), "Regular"), (110, 120, 140))
 
-    # Two cards at the foot. Half the width is almost exactly the finisher
-    # photo's own aspect ratio, so it is barely cropped at all.
-    M, GAP, rad = 58, 22, 28
+    CARD_Y = P(1320)
+    M, GAP, rad = P(48), P(20), P(30)
     CWd = (W - M * 2 - GAP) // 2
-    CH = H - CARD_Y - 58
+    CH = H - CARD_Y - P(46)
     mask = Image.new("L", (CWd, CH), 0)
     ImageDraw.Draw(mask).rounded_rectangle([0, 0, CWd - 1, CH - 1], radius=rad, fill=255)
 
-    base.paste(cover(medal, CWd, CH, 0.5, 0.30), (M, CARD_Y), mask)
+    # Tighter on the two of them: the full frame carried a lot of hallway.
+    mw, mh = medal.size
+    tight = medal.crop((round(mw * 0.06), round(mh * 0.14),
+                        round(mw * 0.97), round(mh * 0.99)))
+    base.paste(cover(tight, CWd, CH, 0.5, 0.5), (M, CARD_Y), mask)
 
     bx = M + CWd + GAP
     card = Image.new("RGB", (CWd, CH), (15, 18, 27))
     cd = ImageDraw.Draw(card)
-    cd.rounded_rectangle([0, 0, CWd - 1, CH - 1], radius=rad, outline=(40, 47, 66), width=2)
-    cd.text((30, 34), "Thank you", font=sf(31, "Semibold"), fill=(255, 255, 255))
-    cd.text((30, 78), "%d people funded this" % donors, font=sf(22, "Regular"),
-            fill=(120, 130, 150))
-    # Faint rules so the space reads as a list waiting to be filled rather than
-    # an empty box. V tags the donors over these.
+    cd.rounded_rectangle([0, 0, CWd - 1, CH - 1], radius=rad, outline=(40, 47, 66), width=P(2))
+    cd.text((P(30), P(34)), "Thank you", font=sf(P(34), "Semibold"), fill=(255, 255, 255))
+    cd.text((P(30), P(80)), "to the %d people" % donors, font=sf(P(27), "Regular"),
+            fill=(168, 178, 198))
+    cd.text((P(30), P(114)), "that funded this", font=sf(P(27), "Regular"),
+            fill=(168, 178, 198))
     for i in range(6):
-        yy = 146 + i * 62
-        cd.line([(30, yy), (CWd - 30, yy)], fill=(30, 36, 52), width=2)
+        yy = P(186) + i * P(62)
+        cd.line([(P(30), yy), (CWd - P(30), yy)], fill=(30, 36, 52), width=P(2))
     base.paste(card, (bx, CARD_Y), mask)
     return base
 
@@ -577,12 +611,12 @@ def main():
     ride, medal = pick(RIDE_IMG), pick(MEDAL_IMG)
     jobs = [
         ("share-post.jpg",
-         build_post(ride, medal, done, goal, raised, donors, allriders), 90),
+         build_post(ride, medal, done, goal, raised, donors, allriders), 95),
         ("og.jpg", build_og(ride, medal, done, goal, rng, raised, money_goal), 88),
         ("share-square.jpg",
          build_square(ride, medal, done, goal, rng, raised, money_goal, donors, allriders), 90),
         ("share-story.jpg",
-         build_story(ride, medal, done, goal, rng, raised, money_goal, donors, allriders), 90),
+         build_story(ride, medal, done, goal, rng, raised, money_goal, donors, allriders), 95),
     ]
     for name, img, q in jobs:
         p = os.path.join(ROOT, name)
