@@ -530,63 +530,54 @@ def build_story(ride, medal, done, goal, rng, raised, money_goal, donors, allrid
 
     pct = done / goal
     num = str(int(round(done)))
-    base, _ = milesnum(base, CX, P(412), num, P(172))
+    base, _ = milesnum(base, CX, P(400), num, P(120))
     d = ImageDraw.Draw(base)
-    ctext(d, CX, P(602), "OF %d MILES  \u00b7  %d%%" % (goal, round(pct * 100)),
-          sf(P(36), "Bold"), (138, 147, 171), P(8))
-
-    BW, BH, BY = P(600), P(8), P(668)
-    d.rounded_rectangle([CX - BW / 2, BY, CX + BW / 2, BY + BH], radius=BH // 2,
-                        fill=(32, 38, 54))
-    fwid = int(BW * min(1.0, pct))
-    if fwid:
-        d.rounded_rectangle([CX - BW / 2, BY, CX - BW / 2 + fwid, BY + BH],
-                            radius=BH // 2, fill=(255, 255, 255))
+    ctext(d, CX, P(534), "OF %d MILES  \u00b7  %d%%" % (goal, round(pct * 100)),
+          sf(P(32), "Bold"), (138, 147, 171), P(7))
 
     permile = ("$%.2f a mile" % (raised / done)) if done else ""
-    ctext(d, CX, P(722), "$%s raised  \u00b7  %d donors  \u00b7  %s"
-          % (format(raised, ","), donors, permile), sf(P(35), "Medium"), (255, 255, 255), P(0.2))
-    ctext(d, CX, P(768), "Every ride verified on Strava",
+    ctext(d, CX, P(584), "$%s raised  \u00b7  %d donors  \u00b7  %s"
+          % (format(raised, ","), donors, permile), sf(P(33), "Medium"), (255, 255, 255), P(0.2))
+    ctext(d, CX, P(624), "Every ride verified on Strava",
           sf(P(26), "Regular"), (124, 134, 154), P(0.4))
     if allriders:
-        ctext(d, CX, P(808), "$%s raised across the whole challenge" % format(allriders, ","),
+        ctext(d, CX, P(658), "$%s raised across the whole challenge" % format(allriders, ","),
               sf(P(25), "Regular"), (96, 105, 124), P(0.4))
 
-    base = pill(base, CX, P(870), P(536), P(80), "Donate on GoFundMe",
-                sf(P(34), "Semibold"), (0, 229, 124), (6, 20, 13))
+    base = pill(base, CX, P(696), P(512), P(70), "Donate on GoFundMe",
+                sf(P(31), "Semibold"), (0, 229, 124), (6, 20, 13))
 
-    # P(950) to P(1060): kept clear for the link sticker.
+    # P(766) to P(840): kept clear for the link sticker.
 
-    ctext(d, CX, P(1074), "Cancer doesn't cut corners.", sf(P(35), "Semibold"), (255, 77, 109))
-    ctext(d, CX, P(1118), "Neither do we.", sf(P(35), "Semibold"), (255, 255, 255))
-    ctext(d, CX, P(1164), "vnaidu16.github.io/vn-ride-for-acs",
-          sf(P(24), "Regular"), (110, 120, 140))
+    ctext(d, CX, P(850), "Cancer doesn't cut corners.", sf(P(32), "Semibold"), (255, 77, 109))
+    ctext(d, CX, P(886), "Neither do we.", sf(P(32), "Semibold"), (255, 255, 255))
+    ctext(d, CX, P(924), "vnaidu16.github.io/vn-ride-for-acs",
+          sf(P(22), "Regular"), (110, 120, 140))
 
-    CARD_Y = P(1212)
-    M, GAP, rad = P(40), P(18), P(30)
+    CARD_Y = P(958)
+    M, GAP, rad = P(28), P(16), P(32)
     CWd = (W - M * 2 - GAP) // 2
-    CH = H - CARD_Y - P(42)
+    CH = H - CARD_Y - P(36)
     mask = Image.new("L", (CWd, CH), 0)
     ImageDraw.Draw(mask).rounded_rectangle([0, 0, CWd - 1, CH - 1], radius=rad, fill=255)
 
     # Tighter on the two of them: the full frame carried a lot of hallway.
     mw, mh = medal.size
-    tight = medal.crop((round(mw * 0.06), round(mh * 0.14),
-                        round(mw * 0.97), round(mh * 0.99)))
-    base.paste(cover(tight, CWd, CH, 0.5, 0.5), (M, CARD_Y), mask)
+    tight = medal.crop((0, round(mh * 0.13), mw, round(mh * 0.99)))
+    base.paste(cover(tight, CWd, CH, 0.47, 0.5), (M, CARD_Y), mask)
 
     bx = M + CWd + GAP
     card = Image.new("RGB", (CWd, CH), (15, 18, 27))
     cd = ImageDraw.Draw(card)
     cd.rounded_rectangle([0, 0, CWd - 1, CH - 1], radius=rad, outline=(40, 47, 66), width=P(2))
-    cd.text((P(32), P(38)), "Thank you", font=sf(P(38), "Semibold"), fill=(255, 255, 255))
-    cd.text((P(32), P(92)), "to the %d people" % donors, font=sf(P(29), "Regular"),
+    cd.text((P(34), P(44)), "Thank you", font=sf(P(44), "Semibold"), fill=(255, 255, 255))
+    cd.text((P(34), P(106)), "to the %d people" % donors, font=sf(P(32), "Regular"),
             fill=(168, 178, 198))
-    cd.text((P(32), P(130)), "that funded this", font=sf(P(29), "Regular"),
+    cd.text((P(34), P(148)), "that funded this", font=sf(P(32), "Regular"),
             fill=(168, 178, 198))
     for i in range(6):
-        yy = P(212) + i * P(74)
-        cd.line([(P(32), yy), (CWd - P(32), yy)], fill=(30, 36, 52), width=P(2))
+        yy = P(240) + i * P(92)
+        cd.line([(P(34), yy), (CWd - P(34), yy)], fill=(30, 36, 52), width=P(2))
     base.paste(card, (bx, CARD_Y), mask)
     return base
 
