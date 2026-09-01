@@ -220,139 +220,122 @@ def build_og(ride, medal, done, goal, rng, raised, money_goal):
     return base
 
 
-def build_square(ride, medal, done, goal, rng, raised, money_goal, donors):
-    W, H, L = 1080, 1080, 72
-    panel = 700                      # imagery above, text below
-    base = Image.new("RGB", (W, H), DARK)
-    half = W // 2 + 60
-    base.paste(cover(ride, half, panel, 0.32, 0.45), (0, 0))
-    base = feather(base, cover(medal, W - half + 150, panel, 0.5, 0.5),
-                   (half - 150, 0), "x", 200)
-    base = scrim(base, (0, panel - 190, W, panel), 1.0, axis="y", invert=True)
-
+def panel(base, y0, y1, W, fade=170):
+    """Solid ground for type, with the photo above it dissolving into it."""
     d = ImageDraw.Draw(base)
-    tracked(d, (L, 44), "CHALLENGE COMPLETE" if done >= goal else "THE 300 MILE CHALLENGE",
-            font(F_BLACK, 22), GREEN, 3.2)
+    d.rectangle([0, y0, W, y1], fill=DARK)
+    grad = Image.new("L", (W, fade), 0)
+    gd = ImageDraw.Draw(grad)
+    for i in range(fade):
+        gd.line([(0, i), (W, i)], fill=int(255 * (i / fade) ** 0.85))
+    base.paste(Image.new("RGB", (W, fade), DARK), (0, y0 - fade), grad)
+    return base
 
-    fn = font(F_ITAL, 178)
+
+def inset(base, im, box, radius=18):
+    """A photo at its own aspect ratio, rounded, with a hairline edge."""
+    x, y, w, h = box
+    tile = cover(im, w, h, 0.32, 0.38)
+    mask = Image.new("L", (w, h), 0)
+    ImageDraw.Draw(mask).rounded_rectangle([0, 0, w - 1, h - 1], radius=radius, fill=255)
+    base.paste(tile, (x, y), mask)
+    ring = Image.new("L", (w, h), 0)
+    ImageDraw.Draw(ring).rounded_rectangle([0, 0, w - 1, h - 1], radius=radius,
+                                           outline=255, width=2)
+    base.paste(Image.new("RGB", (w, h), (255, 255, 255)), (x, y),
+               ring.point(lambda v: int(v * 0.22)))
+    return base
+
+
+def typeblock(base, x, y, W, done, goal, raised, donors, allriders, scale=1.0,
+              cta=True, headline=True, right=None):
+    """Everything below the photo. Nothing here sits on an image."""
+    S = lambda v: max(1, round(v * scale))
+    d = ImageDraw.Draw(base)
+    tracked(d, (x, y), "CHALLENGE COMPLETE", font(F_BLACK, S(23)), GREEN, S(3.4))
+    tracked(d, (x, y + S(40)), "BENEFITING THE AMERICAN CANCER SOCIETY",
+            font(F_BOLD, S(18)), (150, 159, 178), S(2.6))
+
+    fn = font(F_ITAL, S(150))
     num = str(int(round(done)))
-    base = glow_number(base, (L, panel - 168), num, fn)
+    ny = y + S(88)
+    base = glow_number(base, (x, ny), num, fn)
     d = ImageDraw.Draw(base)
-    tracked(d, (L + d.textlength(num, font=fn) + 26, panel - 60), "OF %d MILES" % goal,
-            font(F_BLACK, 26), (170, 180, 200), 3.2)
+    tracked(d, (x + d.textlength(num, font=fn) + S(24), ny + S(96)),
+            "OF %d MILES" % goal, font(F_BLACK, S(26)), (150, 160, 180), S(3.2))
+    yy = ny + S(178)
 
-    fh = font(F_BLACK, 52)
-    d.text((L, panel + 44), "Riding for a world", font=fh, fill=WHITE)
-    d.text((L, panel + 102), "with ", font=fh, fill=WHITE)
-    d.text((L + d.textlength("with ", font=fh), panel + 102), "less cancer.", font=fh, fill=BLUE)
+    if headline:
+        fh = font(F_BLACK, S(48))
+        d.text((x, yy), "Riding for a world", font=fh, fill=WHITE)
+        d.text((x, yy + S(54)), "with ", font=fh, fill=WHITE)
+        d.text((x + d.textlength("with ", font=fh), yy + S(54)), "less cancer.",
+               font=fh, fill=BLUE)
+        yy += S(136)
 
-    base = bar(base, L, W - L, panel + 190, 13, min(1.0, done / goal))
+    base = bar(base, x, (right if right is not None else W - x), yy, S(13),
+               min(1.0, done / goal))
+    yy += S(36)
     d = ImageDraw.Draw(base)
-    fs = font(F_BOLD, 23)
-    stats = "$%s raised  ·  %d donors" % (format(raised, ","), donors)
-    d.text((L, panel + 224), stats, font=fs, fill=GREEN)
-    if rng:
-        d.text((W - L - d.textlength(rng, font=fs), panel + 224), rng, font=fs, fill=(120, 130, 150))
+    d.text((x, yy), "$%s raised  \u00b7  %d donors" % (format(raised, ","), donors),
+           font=font(F_BOLD, S(23)), fill=GREEN)
+    if allriders:
+        d.text((x, yy + S(34)),
+               "$%s across every rider in the challenge" % format(allriders, ","),
+               font=font(F_BOLD, S(18)), fill=(112, 122, 142))
+    yy += S(78)
 
-    fc = font(F_BLACK, 24)
-    lab = "DONATE ON GOFUNDME"
-    cw = tracked_w(d, lab, fc, 2.2)
-    d.rounded_rectangle([L, panel + 282, L + cw + 60, panel + 340], radius=29, fill=GREEN)
-    tracked(d, (L + 30, panel + 298), lab, fc, (6, 18, 12), 2.2)
+    if cta:
+        fc = font(F_BLACK, S(25))
+        lab = "DONATE ON GOFUNDME"
+        cw = tracked_w(d, lab, fc, S(2.3))
+        d.rounded_rectangle([x, yy, x + cw + S(62), yy + S(62)], radius=S(31), fill=GREEN)
+        tracked(d, (x + S(31), yy + S(18)), lab, fc, (6, 18, 12), S(2.3))
+    return base
+
+
+def build_square(ride, medal, done, goal, rng, raised, money_goal, donors, allriders=0):
+    W, H, L = 1080, 1080, 72
+    PH = 540
+    base = Image.new("RGB", (W, H), DARK)
+    base.paste(cover(medal, W, PH, 0.5, 0.28), (0, 0))
+    base = panel(base, PH, H, W, fade=150)
+    base = typeblock(base, L, PH + 40, W, done, goal, raised, donors, allriders,
+                     scale=0.86, cta=False, right=W - L - 334)
+    base = inset(base, ride, (W - L - 300, H - 250, 300, 225))
+    return base
+
+
+def build_post(ride, medal, done, goal, raised, donors, allriders):
+    """Odin big, the bike at the foot at its own shape, and an empty band under
+    it. A feed post cannot carry a link, so that space is for a sticker."""
+    W, H, L = 1080, 1350, 76
+    PH, BLANK = 660, 1160
+    IW, IH = 320, 240
+    IX = W - L - IW
+    base = Image.new("RGB", (W, H), DARK)
+    # 0.30 keeps the medal in his hand inside the frame; 0.24 cropped it off.
+    base.paste(cover(medal, W, PH, 0.5, 0.30), (0, 0))
+    base = panel(base, PH, BLANK, W, fade=170)
+    # Starts high enough that the last line clears the blank band; it was being
+    # sliced in half by it.
+    base = typeblock(base, L, PH + 44, W, done, goal, raised, donors, allriders,
+                     scale=0.86, cta=False, right=IX - 34)
+    base = inset(base, ride, (IX, BLANK - 300, IW, IH))
+    d = ImageDraw.Draw(base)
+    d.rectangle([0, BLANK, W, H], fill=DARK)
     return base
 
 
 def build_story(ride, medal, done, goal, rng, raised, money_goal, donors, allriders=0):
     W, H, L = 1080, 1920, 84
+    PH = 1000
     base = Image.new("RGB", (W, H), DARK)
-    top = 760
-    base.paste(cover(ride, W, top, 0.32, 0.45), (0, 0))
-    # The medal photo is 3:4, so it gets the taller half and keeps its shape.
-    base = feather(base, cover(medal, W, 1030, 0.5, 0.42), (0, top - 90), "y", 210)
-    base = scrim(base, (0, H - 700, W, H), 1.0, axis="y", invert=True)
-    base = scrim(base, (0, 0, W, 300), 0.9, axis="y")
-
-    d = ImageDraw.Draw(base)
-    tracked(d, (L, 96), "CHALLENGE COMPLETE" if done >= goal else "THE 300 MILE CHALLENGE",
-            font(F_BLACK, 26), GREEN, 3.6)
-    tracked(d, (L, 140), "BENEFITING THE AMERICAN CANCER SOCIETY",
-            font(F_BOLD, 20), (190, 198, 214), 2.8)
-
-    fn = font(F_ITAL, 250)
-    num = str(int(round(done)))
-    base = glow_number(base, (L, H - 690), num, fn)
-    d = ImageDraw.Draw(base)
-    tracked(d, (L + d.textlength(num, font=fn) + 30, H - 560), "OF %d MILES" % goal,
-            font(F_BLACK, 32), (175, 185, 205), 3.6)
-
-    fh = font(F_BLACK, 68)
-    d.text((L, H - 452), "Riding for a world", font=fh, fill=WHITE)
-    d.text((L, H - 376), "with ", font=fh, fill=WHITE)
-    d.text((L + d.textlength("with ", font=fh), H - 376), "less cancer.", font=fh, fill=BLUE)
-
-    base = bar(base, L, W - L, H - 268, 16, min(1.0, done / goal))
-    d = ImageDraw.Draw(base)
-    fs = font(F_BOLD, 28)
-    d.text((L, H - 236), "$%s raised  ·  %d donors" % (format(raised, ","), donors),
-           font=fs, fill=GREEN)
-    if allriders:
-        d.text((L, H - 198),
-               "$%s across every rider in the challenge" % format(allriders, ","),
-               font=font(F_BOLD, 19), fill=(122, 132, 152))
-
-    fc = font(F_BLACK, 30)
-    lab = "DONATE ON GOFUNDME"
-    cw = tracked_w(d, lab, fc, 2.6)
-    d.rounded_rectangle([L, H - 168, L + cw + 72, H - 92], radius=38, fill=GREEN)
-    tracked(d, (L + 36, H - 147), lab, fc, (6, 18, 12), 2.6)
-    return base
-
-
-def build_post(ride, medal, done, goal, raised, donors, allriders):
-    """Odin at the top, the bike at the foot, and a deliberately empty band
-    below that. Instagram feed posts cannot carry a link, so the space is left
-    for a sticker rather than filled with a button that would not work."""
-    W, H, L = 1080, 1350, 76
-    # Photo, then a band that carries all the type, then the bike, then nothing.
-    # The number used to sit over the medal shot and landed square on his face.
-    PHOTO, PIC, BLANK = 520, 884, 1124
-    base = Image.new("RGB", (W, H), DARK)
-
-    base.paste(cover(medal, W, PHOTO, 0.5, 0.28), (0, 0))
-    base = scrim(base, (0, PHOTO - 200, W, PHOTO), 1.0, axis="y", invert=True)
-    base = scrim(base, (0, 0, W, 200), 0.85, axis="y")
-
-    d = ImageDraw.Draw(base)
-    tracked(d, (L, 58), "CHALLENGE COMPLETE", font(F_BLACK, 23), GREEN, 3.4)
-    tracked(d, (L, 100), "BENEFITING THE AMERICAN CANCER SOCIETY",
-            font(F_BOLD, 18), (198, 206, 222), 2.6)
-
-    fn = font(F_ITAL, 132)
-    num = str(int(round(done)))
-    base = glow_number(base, (L, PHOTO + 14), num, fn)
-    d = ImageDraw.Draw(base)
-    tracked(d, (L + d.textlength(num, font=fn) + 24, PHOTO + 96), "OF %d MILES" % goal,
-            font(F_BLACK, 25), (170, 180, 200), 3.2)
-
-    fh = font(F_BLACK, 43)
-    d.text((L, PHOTO + 176), "Riding for a world", font=fh, fill=WHITE)
-    d.text((L, PHOTO + 224), "with ", font=fh, fill=WHITE)
-    d.text((L + d.textlength("with ", font=fh), PHOTO + 224), "less cancer.", font=fh, fill=BLUE)
-
-    d.text((L, PHOTO + 292), "$%s raised here  \u00b7  %d donors"
-           % (format(raised, ","), donors), font=font(F_BOLD, 22), fill=GREEN)
-    if allriders:
-        d.text((L, PHOTO + 326),
-               "$%s raised across every rider in the challenge" % format(allriders, ","),
-               font=font(F_BOLD, 17), fill=(116, 126, 146))
-
-    base.paste(cover(ride, W, BLANK - PIC, 0.32, 0.34), (0, PIC))
-
-    # Left empty on purpose: a feed post cannot carry a link, so this is room
-    # for a sticker rather than a button that would not do anything.
-    d = ImageDraw.Draw(base)
-    d.rectangle([0, BLANK, W, H], fill=DARK)
-    base = scrim(base, (0, BLANK - 80, W, BLANK), 1.0, axis="y", invert=True)
+    base.paste(cover(medal, W, PH, 0.5, 0.26), (0, 0))
+    base = panel(base, PH, H, W, fade=210)
+    base = typeblock(base, L, PH + 70, W, done, goal, raised, donors, allriders,
+                     scale=1.0, cta=True)
+    base = inset(base, ride, (W - L - 300, PH - 250, 300, 225))
     return base
 
 
@@ -379,7 +362,7 @@ def main():
          build_post(ride, medal, done, goal, raised, donors, allriders), 90),
         ("og.jpg", build_og(ride, medal, done, goal, rng, raised, money_goal), 88),
         ("share-square.jpg",
-         build_square(ride, medal, done, goal, rng, raised, money_goal, donors), 90),
+         build_square(ride, medal, done, goal, rng, raised, money_goal, donors, allriders), 90),
         ("share-story.jpg",
          build_story(ride, medal, done, goal, rng, raised, money_goal, donors, allriders), 90),
     ]
