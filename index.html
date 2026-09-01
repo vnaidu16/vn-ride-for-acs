@@ -91,6 +91,24 @@
   @media (max-width: 640px) { .shot { height: 220px; } .rail-nav { display: none !important; } }
   @media (prefers-reduced-motion: reduce) { .rail-strip { scroll-behavior: auto; } }
 
+  /* The four above are the highlights. This is everything else, folded away,
+     because most people will never open it and that is fine. Built on <details>
+     so it opens with no script at all. */
+  .more { margin: 2px 22px 4px; }
+  .more > summary { list-style: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+    font-size: 10.5px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: #5b6478;
+    padding: 7px 13px; border: 1px solid #1a2030; border-radius: 999px; background: #0b0e15;
+    transition: color .18s ease, border-color .18s ease; }
+  .more > summary::-webkit-details-marker { display: none; }
+  .more > summary:hover, .more > summary:focus-visible { color: #9aa3b8; border-color: #2a3348; }
+  .more > summary .chev { display: inline-block; transition: transform .25s ease; font-size: 13px; line-height: 1; }
+  .more[open] > summary .chev { transform: rotate(90deg); }
+  .more > summary .cnt { color: #6d82ff; }
+  .more .rail-strip { padding: 12px 0 14px; margin: 0; }
+  .more .shot { height: 230px; }
+  @media (min-width: 1000px) { .more { margin: 4px 72px 6px; } .more .shot { height: 300px; } }
+  @media (max-width: 640px) { .more .shot { height: 190px; } }
+
   /* speed lines, lambo style */
   .speedlines { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 2; }
   .sline { position: absolute; left: 0; height: 1.5px; width: 180px; background: linear-gradient(90deg, transparent, rgba(109,130,255,.7), transparent); opacity: 0; animation: sweep 3.4s linear infinite; will-change: transform; }
@@ -529,6 +547,19 @@
     </div>
     <button class="rail-nav next" type="button" aria-label="Next photo">&#8250;</button>
     <div class="rail-dots" id="raildots" aria-hidden="true"></div>
+    <details class="more" id="more">
+      <summary><span class="chev">&#9656;</span> More from the 300 <span class="cnt" id="morecount"></span></summary>
+      <div class="rail-strip" id="morestrip" tabindex="0" aria-label="More photos, use the arrow keys">
+        <figure class="shot">
+          <picture>
+            <source type="image/avif" srcset="gal-spin-480.avif 480w, gal-spin-720.avif 720w, gal-spin-1100.avif 1100w" sizes="(min-width: 1000px) 400px, 280px">
+            <source type="image/webp" srcset="gal-spin-480.webp 480w, gal-spin-720.webp 720w, gal-spin-1100.webp 1100w" sizes="(min-width: 1000px) 400px, 280px">
+            <img src="gal-spin-720.webp" width="1100" height="825" loading="lazy" decoding="async" alt="Riding a stationary bike at the gym, watch on, screen lit">
+          </picture>
+          <figcaption>Indoor bike, same miles</figcaption>
+        </figure>
+      </div>
+    </details>
   </section>
   <div class="track-zone reveal">
     <div class="mrow" id="mrow"></div>
@@ -1965,6 +1996,36 @@
     }
     fit();
     window.addEventListener('resize', fit, { passive: true });
+  })();
+
+  // ---- the "more" drawer ----
+  // Counts itself so the label never disagrees with what is inside, and hides
+  // entirely when empty. Drag to scroll is shared with the main rail; snapping
+  // and touch already work from CSS alone.
+  (function () {
+    var box = document.getElementById('more'), strip = document.getElementById('morestrip');
+    if (!box || !strip) return;
+    var n = strip.querySelectorAll('.shot').length;
+    if (!n) { box.style.display = 'none'; return; }
+    var cnt = document.getElementById('morecount');
+    if (cnt) cnt.textContent = '(' + n + ')';
+
+    var down = false, sx = 0, sl = 0;
+    strip.addEventListener('pointerdown', function (e) {
+      if (e.pointerType === 'touch') return;
+      down = true; sx = e.clientX; sl = strip.scrollLeft; strip.classList.add('dragging');
+    });
+    window.addEventListener('pointermove', function (e) {
+      if (down) strip.scrollLeft = sl - (e.clientX - sx);
+    });
+    window.addEventListener('pointerup', function () {
+      down = false; strip.classList.remove('dragging');
+    });
+    strip.addEventListener('keydown', function (e) {
+      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+      e.preventDefault();
+      strip.scrollBy({ left: (e.key === 'ArrowRight' ? 1 : -1) * 240, behavior: 'smooth' });
+    });
   })();
 
   // ---- race day briefing ----
