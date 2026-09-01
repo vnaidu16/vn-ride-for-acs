@@ -40,6 +40,7 @@ FONTS = "/System/Library/Fonts/Supplemental/"
 F_BOLD = FONTS + "Arial Bold.ttf"
 AVENIR = "/System/Library/Fonts/Avenir Next.ttc"
 AV_HEAVY, AV_BOLD, AV_DEMI = 8, 0, 2
+SFNS = "/System/Library/Fonts/SFNS.ttf"   # SF Pro, the system face
 F_BLACK = FONTS + "Arial Black.ttf"
 F_ITAL = FONTS + "Arial Bold Italic.ttf"
 
@@ -57,8 +58,20 @@ def font(path, size, index=None):
 
 
 def av(size, weight=None):
-    """Avenir Next. Closer to the story that worked than Arial Black."""
+    """Avenir Next. Kept for the layouts that still use it."""
     return font(AVENIR, size, AV_HEAVY if weight is None else weight)
+
+
+def sf(size, weight="Bold"):
+    """SF Pro. It is a variable font, so the weight is set per instance rather
+    than picked from a family. Avenir read soft and geometric next to the story
+    this is meant to match; SF is the face that story was actually set in."""
+    try:
+        f = ImageFont.truetype(SFNS, size)
+        f.set_variation_by_name(weight)
+        return f
+    except Exception:
+        return font(AVENIR, size, AV_HEAVY)
 
 
 def pick(names):
@@ -396,10 +409,10 @@ def build_story(ride, medal, done, goal, rng, raised, money_goal, donors, allrid
     pct = done / goal
     num = str(int(round(done)))
     d = ImageDraw.Draw(base)
-    fn = av(190)
+    fn = sf(190, "Black")
     d.text((CX - d.textlength(num, font=fn) / 2, 348), num, font=fn, fill=(255, 255, 255))
     ctext(d, CX, 572, "OF %d MILES  \u00b7  %d%%" % (goal, round(pct * 100)),
-          av(42), (226, 231, 240), 0.5)
+          sf(42, "Bold"), (226, 231, 240), 0.5)
 
     # A plain rounded track, sized to the type above it, instead of a skewed
     # slash floating on its own.
@@ -413,20 +426,20 @@ def build_story(ride, medal, done, goal, rng, raised, money_goal, donors, allrid
 
     permile = ("$%.2f a mile" % (raised / done)) if done else ""
     ctext(d, CX, 704, "$%s raised  \u00b7  %d donors  \u00b7  %s"
-          % (format(raised, ","), donors, permile), av(36, AV_BOLD), (255, 255, 255), 0.2)
-    ctext(d, CX, 756, "Every ride verified on Strava", av(27, AV_DEMI), (124, 134, 154), 0.4)
+          % (format(raised, ","), donors, permile), sf(36, "Bold"), (255, 255, 255), 0.2)
+    ctext(d, CX, 756, "Every ride verified on Strava", sf(27, "Medium"), (124, 134, 154), 0.4)
     if allriders:
         ctext(d, CX, 798, "$%s raised across the whole challenge" % format(allriders, ","),
-              av(26, AV_DEMI), (96, 105, 124), 0.4)
+              sf(26, "Medium"), (96, 105, 124), 0.4)
 
-    base = pill(base, CX, 878, 560, 88, "Donate on GoFundMe", av(36, AV_BOLD),
+    base = pill(base, CX, 878, 560, 88, "Donate on GoFundMe", sf(36, "Semibold"),
                 (0, 229, 124), (6, 20, 13))
 
     # 978 to 1064 stays clear for the link sticker.
 
-    ctext(d, CX, 1086, "Cancer doesn't cut corners.", av(37), (255, 77, 109))
-    ctext(d, CX, 1132, "Neither do we.", av(37), (255, 255, 255))
-    ctext(d, CX, 1186, "vnaidu16.github.io/vn-ride-for-acs", av(25, AV_DEMI), (110, 120, 140))
+    ctext(d, CX, 1086, "Cancer doesn't cut corners.", sf(37, "Bold"), (255, 77, 109))
+    ctext(d, CX, 1132, "Neither do we.", sf(37, "Bold"), (255, 255, 255))
+    ctext(d, CX, 1186, "vnaidu16.github.io/vn-ride-for-acs", sf(25, "Medium"), (110, 120, 140))
 
     # Two cards at the foot. Half the width is almost exactly the finisher
     # photo's own aspect ratio, so it is barely cropped at all.
@@ -442,8 +455,8 @@ def build_story(ride, medal, done, goal, rng, raised, money_goal, donors, allrid
     card = Image.new("RGB", (CWd, CH), (15, 18, 27))
     cd = ImageDraw.Draw(card)
     cd.rounded_rectangle([0, 0, CWd - 1, CH - 1], radius=rad, outline=(40, 47, 66), width=2)
-    cd.text((30, 34), "Thank you", font=av(32), fill=(255, 255, 255))
-    cd.text((30, 78), "%d people funded this" % donors, font=av(23, AV_DEMI),
+    cd.text((30, 34), "Thank you", font=sf(32, "Bold"), fill=(255, 255, 255))
+    cd.text((30, 78), "%d people funded this" % donors, font=sf(23, "Medium"),
             fill=(120, 130, 150))
     # Faint rules so the space reads as a list waiting to be filled rather than
     # an empty box. V tags the donors over these.
