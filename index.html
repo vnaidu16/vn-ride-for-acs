@@ -322,6 +322,8 @@
   .finish .fall { margin: 16px auto 0; max-width: 620px; font-size: 12.5px; line-height: 1.6;
     color: #7b859c; }
   .finish .fall b { color: #c3cad9; font-weight: 800; }
+  .finish .fall a { color: #9aa3b8; text-decoration: underline; text-underline-offset: 2px; }
+  .finish .fall a:hover { color: #c3cad9; }
   .finish .fask { display: none; margin: 20px auto 0; max-width: 620px; padding-top: 18px; border-top: 1px solid #1c2231; }
   .finish .fask.on { display: block; }
   .finish .fask p { font-size: 14px; color: #c3cad9; margin: 0 0 14px; }
@@ -712,7 +714,8 @@
     // Every rider in the ACS Cycle 300 Miles in August challenge, not V's own
     // total. Kept separate from the fundraiser figures on purpose: the page
     // reports his own total from data.json and must never imply this is his.
-    allRiders: 195089
+    // Read from the challenge's community page, which is linked beside it.
+    allRiders: 232106
   };
   var MILES_DONE = RIDE.done, MILES_GOAL = RIDE.goal;
 
@@ -1788,8 +1791,10 @@
       '<div class="fstat"><b id="fraised">&mdash;</b><span>Raised for ACS</span></div>' +
       '<div class="fstat"><b id="fdonors">&mdash;</b><span>Donors</span></div>' +
       '<div class="fstat"><b>70.3</b><span>Santa Cruz</span></div></div>' +
-      '<div class="fall">Across every rider in the ACS <i>Cycle 300 Miles in August</i> ' +
-      'challenge, <b>$' + RIDE.allRiders.toLocaleString('en-US') + '</b> was raised for the ' +
+      '<div class="fall">Across every rider in the ' +
+      '<a href="https://www.gofundme.com/communities/cycle-300-miles-august-2026" ' +
+      'target="_blank" rel="noopener"><i>Cycle 300 Miles in August</i> challenge</a>, ' +
+      '<b>$' + RIDE.allRiders.toLocaleString('en-US') + '</b> was raised for the ' +
       'American Cancer Society. The figures above are this page&rsquo;s own.</div>' +
       '<div class="fask" id="fask"><p id="faskline"></p>' +
       '<a class="fcta" href="https://www.gofundme.com/f/im-cycling-300-miles-for-the-american-cancer-society-m4djn" ' +
