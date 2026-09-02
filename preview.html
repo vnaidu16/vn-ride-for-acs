@@ -90,6 +90,10 @@
     -webkit-clip-path: inset(0 0 var(--wipe, 0%) 0);
             clip-path: inset(0 0 var(--wipe, 0%) 0); }
   /* The seam itself: a thin lit edge that rides the boundary. */
+  /* The hero is pinned while the wipe runs, then released, so the finisher
+     shot is held on screen instead of flashing past. The wrapper's height is
+     set from JS against the hero's real height rather than guessed in vh. */
+  .heropin.wipe .hero { position: sticky; top: 0; }
   .wipeline { display: none; }
   .hero.wipe .wipeline { display: block; position: absolute; left: 0; right: 0; z-index: 2; height: 2px;
     bottom: var(--wipe, 0%); opacity: var(--wipeop, 0);
@@ -552,6 +556,7 @@
 <div class="flyer" id="flyer">
   <div class="orb" style="top: 560px; left: -120px;"></div>
   <div class="orb" style="top: 980px; right: -140px; animation-delay: -8s;"></div>
+  <div class="heropin" id="heropin">
   <div class="hero" id="hero">
     <picture><source type="image/avif" srcset="hero-800.avif 800w, hero-1120.avif 1120w, hero.avif 1500w, hero-2000.avif 2000w, hero-2600.avif 2600w, hero-3000.avif 3000w" sizes="100vw"><source type="image/webp" srcset="hero-800.webp 800w, hero-1120.webp 1120w, hero.webp 1500w, hero-2000.webp 2000w, hero-2600.webp 2600w, hero-3000.webp 3000w" sizes="100vw"><img class="bg" id="heroimg" src="hero.jpg" srcset="hero-800.jpg 800w, hero-1120.jpg 1120w, hero.jpg 1500w" sizes="100vw" width="1500" height="1125" fetchpriority="high" decoding="async" alt="V riding, hydration vest on, hands on the bars"></picture>
     <div class="hero2" aria-hidden="true">
@@ -584,6 +589,8 @@
       <div class="deadline reveal" id="deadline"></div>
     </div>
   </div>
+
+  </div><!-- /heropin -->
 
   <div class="finish" id="finish"></div>
 
@@ -1110,15 +1117,36 @@
   // and the reader is scrolling past a photo they have already finished
   // uncovering.
   var heroEl = document.getElementById('hero');
-  var wipeOn = /[?&]hero=wipe/.test(location.search) && heroEl && !reduced;
-  if (wipeOn) heroEl.classList.add('wipe');
+  var pinEl = document.getElementById('heropin');
+  var wipeOn = /[?&]hero=wipe/.test(location.search) && heroEl && pinEl && !reduced;
+
+  // The hero sticks while the wipe runs and is released afterwards, so the
+  // finisher shot is actually held on screen. Sticky does not work inside a
+  // scroll container, and .flyer clips with overflow:hidden, which makes one.
+  // overflow:clip clips identically without creating one.
+  var WIPE_PART = 0.62;   // share of the pinned travel spent uncovering
+  function sizePin() {
+    var h = heroEl.offsetHeight;
+    pinEl.style.height = Math.round(h * 2.05) + 'px';   // hero + 1.05h of travel
+  }
+  if (wipeOn) {
+    pinEl.classList.add('wipe');
+    heroEl.classList.add('wipe');
+    var flyer = document.getElementById('flyer');
+    if (flyer) flyer.style.overflow = 'clip';
+    sizePin();
+    window.addEventListener('resize', function () { sizePin(); wipeTo(window.scrollY); },
+                            { passive: true });
+  }
+
   function wipeTo(y) {
-    var travel = Math.max(1, heroEl.offsetHeight * 0.72);
-    var t = Math.min(1, Math.max(0, y / travel));
-    // Ease so the reveal starts gently rather than jumping on the first pixel.
+    var travel = Math.max(1, pinEl.offsetHeight - heroEl.offsetHeight);
+    var p = Math.min(1, Math.max(0, (y - pinEl.offsetTop) / travel));
+    // The reveal finishes early and the rest of the pin is a hold, which is the
+    // whole point: the second photo gets read rather than glimpsed.
+    var t = Math.min(1, p / WIPE_PART);
     var e = t * t * (3 - 2 * t);
     heroEl.style.setProperty('--wipe', (e * 100).toFixed(2) + '%');
-    // The seam only shows while it is travelling.
     heroEl.style.setProperty('--wipeop', (t > 0.01 && t < 0.99 ? 1 : 0).toFixed(0));
   }
   if (wipeOn) wipeTo(window.scrollY);
