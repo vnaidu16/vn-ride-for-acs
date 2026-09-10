@@ -2637,7 +2637,8 @@
     }
     function hm(sec) {
       sec = Math.round(sec);
-      return Math.floor(sec / 3600) + 'h ' + ('0' + Math.floor(sec % 3600 / 60)).slice(-2) + 'm';
+      var h = Math.floor(sec / 3600), m = Math.floor(sec % 3600 / 60);
+      return h ? h + 'h ' + ('0' + m).slice(-2) + 'm' : m + ' min';
     }
 
     // Each row is a moment on the clock, not a leg. Someone following wants to
@@ -2666,7 +2667,7 @@
       return '<div class="tmom' + (m.fin ? ' fin' : '') + cls + '" style="--tc:' + m.c + '">' +
         '<span class="tclock">' + hhmm(at(m.at)) + '</span>' +
         '<span class="tnm">' + m.n + '</span>' +
-        '<span class="tleg">' + (m.leg || 'gun') + '</span>' +
+        '<span class="tleg">' + (m.leg ? m.leg + ' &middot; ' + hm(m.at) + ' elapsed' : 'the gun') + '</span>' +
         '<span class="twhat">' + m.w + '</span></div>';
     }).join('');
 
