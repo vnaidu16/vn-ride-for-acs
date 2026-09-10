@@ -1310,6 +1310,15 @@
 .hq-head .sub { color: #5b6478; font-size: 14px; font-weight: 600; }
 .hq-tabs { display: flex; gap: 8px; margin: 26px 0 22px; flex-wrap: wrap; }
 .hq-tab { background: #0d1017; border: 1px solid #1e2430; color: #9aa3b8; font-size: 12px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; padding: 10px 18px; border-radius: 999px; cursor: pointer; font-family: inherit; transition: all .2s; }
+.hq-link { margin-left: auto; display: inline-flex; align-items: center; gap: 7px;
+  background: #0d1017; border: 1px solid #1e2430; color: #6b7489; font-family: inherit;
+  font-size: 11px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase;
+  padding: 10px 15px; border-radius: 999px; cursor: pointer; transition: all .2s; }
+.hq-link svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2;
+  stroke-linecap: round; }
+.hq-link:hover { border-color: #2b3550; color: #c3cbdc; transform: translateY(-1px); }
+.hq-link.ok { color: #00e57c; border-color: #17402f; background: #0b1a15; }
+@media (max-width: 640px) { .hq-link { margin-left: 0; padding: 9px 13px; } .hq-link span { display: none; } }
 .hq-tab.active { background: linear-gradient(90deg,#2746F8,#4a63ff); border-color: transparent; color: #fff; box-shadow: 0 4px 18px rgba(39,70,248,.4); }
 .hq-sec { display: none; color: #d8dbe4; }
 .hq-sec.active { display: block; animation: hqin .4s cubic-bezier(.16,1,.3,1); }
@@ -1701,6 +1710,9 @@
     <button class="hq-tab" data-sec="course">Course</button>
     <button class="hq-tab" data-sec="raceday">Race Day</button>
     <button class="hq-tab" data-sec="zones">Zones</button>
+    <button class="hq-link" id="hqlink" type="button" title="Copy a link straight to this tab">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.6 13.4a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1.4 1.4"/><path d="M13.4 10.6a4 4 0 0 0-5.7 0l-3 3a4 4 0 1 0 5.7 5.7l1.4-1.4"/></svg>
+      <span>Copy link</span></button>
   </div>
 
   <div class="hq-sec active" id="sec-plan">
@@ -1855,6 +1867,11 @@
     var open = hq.classList.toggle('open');
     burger.classList.toggle('open', open);
     document.body.style.overflow = open ? 'hidden' : '';
+    if (!open && location.hash) history.replaceState(null, '', location.pathname + location.search);
+    if (open) {
+      var cur = document.querySelector('.hq-tab.active');
+      if (cur) showTab(cur.dataset.sec, true);
+    }
     var intro = document.getElementById('hqintro');
     if (intro) {
       clearTimeout(introTimer);
@@ -1866,14 +1883,89 @@
       }
     }
   });
+  // Every tab is addressable. #race-day opens the Engine Room already on that
+  // tab, so a link can be sent to one page of it rather than to the front door.
+  var SLUGS = { plan:'plan', sims:'race-sims', log:'log', cal:'calendar',
+                an:'analysis', course:'course', raceday:'race-day', zones:'zones' };
+  var BYSLUG = {};
+  Object.keys(SLUGS).forEach(function(k){ BYSLUG[SLUGS[k]] = k; });
+
+  function openHQ(on){
+    hq.classList.toggle('open', on);
+    burger.classList.toggle('open', on);
+    document.body.style.overflow = on ? 'hidden' : '';
+  }
+
+  function showTab(sec, push){
+    var btn = document.querySelector('.hq-tab[data-sec="' + sec + '"]');
+    var pane = document.getElementById('sec-' + sec);
+    if (!btn || !pane) return false;
+    document.querySelectorAll('.hq-tab').forEach(function(x){x.classList.remove('active');});
+    document.querySelectorAll('.hq-sec').forEach(function(x){x.classList.remove('active');});
+    btn.classList.add('active');
+    // Re-adding the class is what replays the staggered entrance, so a tab
+    // arrived at by link animates exactly as one arrived at by click.
+    void pane.offsetWidth;
+    pane.classList.add('active');
+    if (push) {
+      var url = location.pathname + location.search + '#' + SLUGS[sec];
+      if (location.hash !== '#' + SLUGS[sec]) history.replaceState(null, '', url);
+    }
+    return true;
+  }
+
   document.querySelectorAll('.hq-tab').forEach(function(t){
-    t.addEventListener('click', function(){
-      document.querySelectorAll('.hq-tab').forEach(function(x){x.classList.remove('active');});
-      document.querySelectorAll('.hq-sec').forEach(function(x){x.classList.remove('active');});
-      t.classList.add('active');
-      document.getElementById('sec-'+t.dataset.sec).classList.add('active');
-    });
+    t.addEventListener('click', function(){ showTab(t.dataset.sec, true); });
   });
+
+  function route(){
+    var slug = location.hash.replace(/^#/, '');
+    if (!slug) return false;
+    var sec = BYSLUG[slug] || (SLUGS[slug] ? slug : null);
+    if (!sec) return false;
+    openHQ(true);
+    showTab(sec, false);
+    return true;
+  }
+  (function(){
+    var btn = document.getElementById('hqlink'); if (!btn) return;
+    var label = btn.querySelector('span'), revert = null;
+    btn.addEventListener('click', function(){
+      var on = document.querySelector('.hq-tab.active');
+      var slug = SLUGS[on ? on.dataset.sec : 'plan'];
+      var url = location.origin + location.pathname + '#' + slug;
+      function done(ok){
+        btn.classList.toggle('ok', ok);
+        // A browser can refuse the clipboard outright, so leave the address
+        // itself behind rather than a dead end.
+        btn.title = ok ? 'Copied ' + url : url;
+        label.textContent = ok ? 'Copied' : 'Copy failed';
+        clearTimeout(revert);
+        revert = setTimeout(function(){
+          btn.classList.remove('ok');
+          label.textContent = 'Copy link';
+          btn.title = 'Copy a link straight to this tab';
+        }, 2000);
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(function(){ done(true); }, function(){ done(false); });
+      } else {
+        // Older iOS Safari refuses the async API outside a secure context.
+        var t = document.createElement('textarea');
+        t.value = url; t.setAttribute('readonly', ''); t.style.position = 'fixed'; t.style.opacity = '0';
+        document.body.appendChild(t); t.select();
+        var ok = false;
+        try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+        document.body.removeChild(t);
+        done(ok);
+      }
+    });
+  })();
+
+  window.addEventListener('hashchange', function(){
+    if (!route() && !location.hash) openHQ(false);
+  });
+  route();
   function fmtDate(d){ var p=d.split('-'); return ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+p[1]]+' '+(+p[2]); }
   function renderLog(f){
     var rows = HQ.acts.filter(function(a){ return f==='ALL'||a.t===f; }).map(function(a){
