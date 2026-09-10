@@ -1343,15 +1343,15 @@
 .hq-sec.active .simtab tbody tr:nth-child(4), .hq-sec.active .proj tbody tr:nth-child(4) { animation-delay: .31s }
 .hq-sec.active .simtab tbody tr:nth-child(n+5), .hq-sec.active .proj tbody tr:nth-child(n+5) { animation-delay: .36s }
 @keyframes rowIn { from { opacity: 0; transform: translate3d(-6px,0,0); } to { opacity: 1; transform: none; } }
-.hq-sec.active .tseg { animation: rowIn .45s cubic-bezier(.16,1,.3,1) both; }
-.hq-sec.active .tseg:nth-child(1) { animation-delay: .10s }
-.hq-sec.active .tseg:nth-child(2) { animation-delay: .16s }
-.hq-sec.active .tseg:nth-child(3) { animation-delay: .22s }
-.hq-sec.active .tseg:nth-child(4) { animation-delay: .28s }
-.hq-sec.active .tseg:nth-child(5) { animation-delay: .34s }
-.hq-sec.active .tseg:nth-child(6) { animation-delay: .40s }
+.hq-sec.active .tmom { animation: rowIn .45s cubic-bezier(.16,1,.3,1) both; }
+.hq-sec.active .tmom:nth-child(1) { animation-delay: .10s }
+.hq-sec.active .tmom:nth-child(2) { animation-delay: .16s }
+.hq-sec.active .tmom:nth-child(3) { animation-delay: .22s }
+.hq-sec.active .tmom:nth-child(4) { animation-delay: .28s }
+.hq-sec.active .tmom:nth-child(5) { animation-delay: .34s }
+.hq-sec.active .tmom:nth-child(6) { animation-delay: .40s }
 /* The live segment on race morning gets a slow pulse so the eye finds it. */
-.tseg.now::after { content: ''; position: absolute; left: -25px; top: 17px; width: 12px; height: 12px;
+.tmomX.now::after { content: ''; position: absolute; left: -25px; top: 17px; width: 12px; height: 12px;
   border-radius: 50%; background: var(--tc); opacity: .5; animation: segPulse 2.2s ease-out infinite; }
 @keyframes segPulse { from { transform: scale(1); opacity: .5 } to { transform: scale(2.6); opacity: 0 } }
 .hq-tab { position: relative; overflow: hidden; }
@@ -1361,9 +1361,9 @@
 
 @media (prefers-reduced-motion: reduce) {
   .hq-sec.active, .hq-sec.active > *, .hq-sec.active .simtab tbody tr, .hq-sec.active .proj tbody tr,
-  .hq-sec.active .tseg, .hq-tab.active, .active .loadbar {
+  .hq-sec.active .tmom, .hq-tab.active, .active .loadbar {
     animation: none !important; opacity: 1 !important; transform: none !important; }
-  .tseg.now::after { animation: none; opacity: 0; }
+  .tmom.now::after { animation: none; opacity: 0; }
 }
 @keyframes hqin { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
 .hq-card { background: #0b0e15; border: 1px solid #1a2030; border-radius: 16px; padding: 22px 24px; margin-bottom: 16px; }
@@ -1510,22 +1510,38 @@
 .simleg .st { font-size: 12px; color: #9aa3b8; margin-top: 3px; font-variant-numeric: tabular-nums; }
 .simtot { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; }
 .simtot div { flex: 1; min-width: 108px; background: #10141f; border: 1px solid #1e2536; border-radius: 10px; padding: 10px 12px; }
+.tkey { display: grid; grid-template-columns: repeat(auto-fit,minmax(128px,1fr)); gap: 8px; margin: 2px 0 18px; }
+.tkey div { background: #10141f; border: 1px solid #1e2536; border-radius: 12px; padding: 11px 14px; }
+.tkey .kk { font-size: 9px; letter-spacing: 1.4px; text-transform: uppercase; color: #5b6478; font-weight: 800; }
+.tkey .kv { font-size: 21px; font-weight: 900; color: #f5f6f8; margin-top: 3px; font-variant-numeric: tabular-nums; letter-spacing: -.4px; }
+.tkey .ks { font-size: 10.5px; color: #6b7489; margin-top: 2px; }
+.tkey div.go .kv { color: #00e57c; }
+.tkey div.fin .kv { color: #8fa1ff; }
+
 .tline { position: relative; padding-left: 26px; margin: 4px 0 2px; }
-.tline::before { content: ''; position: absolute; left: 6px; top: 10px; bottom: 14px; width: 2px;
+.tline::before { content: ''; position: absolute; left: 6px; top: 14px; bottom: 18px; width: 2px;
   background: linear-gradient(180deg,#1e2536,#2b3550,#1e2536); border-radius: 2px; }
-.tseg { position: relative; padding: 11px 0 11px 4px; display: grid;
-  grid-template-columns: 1fr auto auto; gap: 4px 16px; align-items: baseline; }
-.tseg + .tseg { border-top: 1px solid #151b28; }
-.tseg::before { content: ''; position: absolute; left: -25px; top: 17px; width: 12px; height: 12px;
+.tmom { position: relative; padding: 12px 0 12px 4px; display: grid;
+  grid-template-columns: 92px 1fr auto; gap: 2px 14px; align-items: baseline; }
+.tmom + .tmom { border-top: 1px solid #151b28; }
+.tmom::before { content: ''; position: absolute; left: -25px; top: 18px; width: 12px; height: 12px;
   border-radius: 50%; background: #0d1017; box-shadow: inset 0 0 0 2px var(--tc, #2b3550); }
-.tseg.done::before { background: var(--tc); box-shadow: none; }
-.tseg.now::before { background: var(--tc); box-shadow: 0 0 0 4px rgba(0,229,124,.18); }
-.tseg .tn { font-size: 13.5px; font-weight: 800; color: #f5f6f8; }
-.tseg .tsub { grid-column: 1 / -1; font-size: 11.5px; color: #5b6478; margin-top: -2px; }
-.tseg .tat { font-size: 15px; font-weight: 900; color: var(--tc); font-variant-numeric: tabular-nums; }
-.tseg .tdur { font-size: 12px; color: #9aa3b8; font-variant-numeric: tabular-nums; min-width: 62px; text-align: right; }
-.tseg.fin .tn, .tseg.fin .tat { color: #00e57c; }
-@media (max-width: 640px) { .tseg { grid-template-columns: 1fr auto; } .tseg .tdur { display: none; } }
+.tmom.done::before { background: var(--tc); box-shadow: none; }
+.tmom.now::before { background: var(--tc); box-shadow: 0 0 0 4px rgba(0,229,124,.18); }
+.tmom .tclock { font-size: 16px; font-weight: 900; color: var(--tc); font-variant-numeric: tabular-nums; letter-spacing: -.3px; }
+.tmom .tnm { font-size: 13.5px; font-weight: 800; color: #f5f6f8; }
+.tmom .tleg { font-size: 11.5px; color: #5b6478; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.tmom .twhat { grid-column: 2 / -1; font-size: 11.5px; color: #6b7489; margin-top: -1px; }
+.tmom.fin .tclock, .tmom.fin .tnm { color: #00e57c; }
+.tmom.now::after { content: ''; position: absolute; left: -25px; top: 18px; width: 12px; height: 12px;
+  border-radius: 50%; background: var(--tc); opacity: .5; animation: segPulse 2.2s ease-out infinite; }
+@keyframes segPulse { from { transform: scale(1); opacity: .5 } to { transform: scale(2.6); opacity: 0 } }
+@media (max-width: 640px) {
+  .tmom { grid-template-columns: 82px 1fr; }
+  .tmom .tclock { font-size: 15px; }
+  .tmom .tleg { grid-column: 1 / -1; margin-top: 2px; }
+  .tmom .twhat { grid-column: 1 / -1; }
+}
 
 .loadwrap { display: flex; align-items: flex-end; gap: 5px; height: 118px; margin: 14px 0 6px; }
 .loadcol { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 5px; height: 100%; }
@@ -1806,6 +1822,7 @@
   </div>
   <div class="hq-sec" id="sec-raceday">
     <div class="hq-card wide"><h3>Race morning <span id="morninghead" style="color:#5b6478;font-weight:700"></span></h3>
+      <div class="tkey" id="morningkey"></div>
       <div class="tline" id="morning"></div>
       <div class="hq-note" id="morningnote"></div>
     </div>
@@ -2604,56 +2621,79 @@
     }
   })();
 
-  // ---- race morning, the timeline anyone following can read ----
+  // ---- race morning, written for whoever is following rather than racing ----
   (function () {
     var host = document.getElementById('morning'); if (!host) return;
-    var GUN = new Date('2026-09-13T06:00:00');       // rolling start, first wave
+    var GUN = new Date('2026-09-13T06:00:00');
     var T1 = 5 * 60, T2 = 5 * 60;
-
     function leg(t) { var a = analog(t); return a ? a.sec : projected(t, stats(t)); }
-    var SEGS = [
-      { n: 'Swim',  c: '#38bdf8', d: leg('S'), s: '1.2 mi, clockwise around the wharf, out at Cowell\u2019s' },
-      { n: 'T1',    c: '#8fa1ff', d: T1,       s: 'sand, then half a mile on pavement to Depot Park' },
-      { n: 'Bike',  c: '#6d82ff', d: leg('R'), s: '56 mi on Highway 1, the climb at mile 15' },
-      { n: 'T2',    c: '#8fa1ff', d: T2,       s: 'back into Depot Park, shoes and belt' },
-      { n: 'Run',   c: '#fc5200', d: leg('N'), s: '13.1 mi through the parks and along West Cliff' }
-    ];
+    var SWIM = leg('S'), BIKE = leg('R'), RUN = leg('N');
+    var TOTAL = SWIM + T1 + BIKE + T2 + RUN;
 
-    var now = new Date(), run = 0;
     function at(sec) { return new Date(GUN.getTime() + sec * 1000); }
     function hhmm(dt) {
-      var h = dt.getHours(), m = dt.getMinutes(), ap = h >= 12 ? 'PM' : 'AM';
-      return ((h % 12) || 12) + ':' + ('0' + m).slice(-2) + ' ' + ap;
+      var h = dt.getHours(), m = dt.getMinutes();
+      return ((h % 12) || 12) + ':' + ('0' + m).slice(-2) + ' ' + (h >= 12 ? 'PM' : 'AM');
     }
-    var html = SEGS.map(function (g) {
-      var startS = run; run += g.d;
-      var cls = now >= at(run) ? ' done' : (now >= at(startS) ? ' now' : '');
-      return '<div class="tseg' + cls + '" style="--tc:' + g.c + '">' +
-        '<span class="tn">' + g.n + '</span>' +
-        '<span class="tdur">' + clock(g.d) + '</span>' +
-        '<span class="tat">' + hhmm(at(run)) + '</span>' +
-        '<span class="tsub">' + g.s + '</span></div>';
+    function hm(sec) {
+      sec = Math.round(sec);
+      return Math.floor(sec / 3600) + 'h ' + ('0' + Math.floor(sec % 3600 / 60)).slice(-2) + 'm';
+    }
+
+    // Each row is a moment on the clock, not a leg. Someone following wants to
+    // know when to look, and the leg it closes is the secondary detail.
+    var MOMENTS = [
+      { c: '#00e57c', at: 0,                        n: 'Swim start',
+        w: 'Main Beach, next to the Boardwalk. Rolling start, so his own clock begins when he crosses the mat.' },
+      { c: '#38bdf8', at: SWIM,                     n: 'Out of the water, into T1',
+        w: 'Exits at Cowell\u2019s, then runs the half mile to Depot Park.', leg: 'swim ' + hm(SWIM) },
+      { c: '#6d82ff', at: SWIM + T1,                n: 'Onto the bike',
+        w: 'Out of Depot Park and north onto Highway 1.', leg: 'T1 ' + hm(T1) },
+      { c: '#6d82ff', at: SWIM + T1 + BIKE,         n: 'Off the bike, into T2',
+        w: 'Back into Depot Park after 56 miles.', leg: 'bike ' + hm(BIKE) },
+      { c: '#fc5200', at: SWIM + T1 + BIKE + T2,    n: 'Out on the run',
+        w: 'Two laps through the parks and along West Cliff.', leg: 'T2 ' + hm(T2) },
+      { c: '#00e57c', at: TOTAL,                    n: 'Finish', fin: true,
+        w: 'The last hundred yards are run on the sand at Cowell\u2019s.', leg: 'run ' + hm(RUN) }
+    ];
+
+    var now = new Date();
+    host.innerHTML = MOMENTS.map(function (m, i) {
+      var nxt = MOMENTS[i + 1];
+      var cls = now >= at(m.at) ? ' done' : '';
+      if (!cls && i > 0 && now >= at(MOMENTS[i - 1].at)) cls = ' now';
+      if (i === 0 && !cls && now >= GUN) cls = ' now';
+      return '<div class="tmom' + (m.fin ? ' fin' : '') + cls + '" style="--tc:' + m.c + '">' +
+        '<span class="tclock">' + hhmm(at(m.at)) + '</span>' +
+        '<span class="tnm">' + m.n + '</span>' +
+        '<span class="tleg">' + (m.leg || 'gun') + '</span>' +
+        '<span class="twhat">' + m.w + '</span></div>';
     }).join('');
-    html += '<div class="tseg fin' + (now >= at(run) ? ' done' : '') + '" style="--tc:#00e57c">' +
-      '<span class="tn">Finish on the sand</span>' +
-      '<span class="tdur">' + clock(run) + '</span>' +
-      '<span class="tat">' + hhmm(at(run)) + '</span>' +
-      '<span class="tsub">the last hundred yards are run on Cowell\u2019s beach</span></div>';
-    host.innerHTML = html;
+
+    document.getElementById('morningkey').innerHTML = [
+      { k: 'Starts', v: hhmm(GUN), s: 'Sun Sep 13, Main Beach', cls: 'go' },
+      { k: 'Onto the bike', v: hhmm(at(SWIM + T1)), s: 'after the swim and T1' },
+      { k: 'Onto the run', v: hhmm(at(SWIM + T1 + BIKE + T2)), s: 'after 56 miles' },
+      { k: 'Expected finish', v: hhmm(at(TOTAL)), s: hm(TOTAL) + ' on the clock', cls: 'fin' }
+    ].map(function (c) {
+      return '<div class="' + (c.cls || '') + '"><div class="kk">' + c.k + '</div>' +
+        '<div class="kv">' + c.v + '</div><div class="ks">' + c.s + '</div></div>';
+    }).join('');
 
     var days = Math.ceil((GUN - now) / 86400000);
     document.getElementById('morninghead').innerHTML = days > 0
-      ? '&middot; Sun Sep 13, gun at 6:00 AM, ' + days + ' day' + (days === 1 ? '' : 's') + ' out'
+      ? '&middot; Sun Sep 13, ' + days + ' day' + (days === 1 ? '' : 's') + ' out'
       : '&middot; Sun Sep 13';
 
     document.getElementById('morningnote').innerHTML =
-      '<b>Times are projections, not promises.</b> Every one of them scales the session that most resembles ' +
-      'race day, and two of the three are the conservative choice: the ocean swim rather than pool pace, and ' +
-      'the run off the 56 rather than a standalone half. Expect the real clock to move around them.<br><br>' +
-      '<b>Following along:</b> live splits appear in the <b>IRONMAN Tracker</b> app. Search <b>Vaibhav Naidu</b>, ' +
-      'turn notifications on, and you get a ping as he comes out of the water, off the bike and across the line. ' +
-      'The three moments worth being awake for are the swim exit around ' + hhmm(at(SEGS[0].d)) + ', the ' +
-      'dismount around ' + hhmm(at(SEGS[0].d + T1 + SEGS[2].d)) + ', and the finish around ' + hhmm(at(run)) + '.';
+      '<b>Every time here is a projection, not a promise.</b> They scale the session that most resembles race ' +
+      'day, and two of the three are the conservative choice: the ocean swim rather than his quicker pool pace, ' +
+      'and the run off the 56 rather than a standalone half. Treat them as a window rather than a schedule, and ' +
+      'note that IRONMAN uses a rolling start, so the gun and his own first stroke can be twenty minutes apart.' +
+      '<br><br><b>Following live:</b> splits appear in the <b>IRONMAN Tracker</b> app. Search ' +
+      '<b>Vaibhav Naidu</b> and turn notifications on, and you get a ping at each of the moments above. If you ' +
+      'only want three: he comes out of the water around <b>' + hhmm(at(SWIM)) + '</b>, off the bike around <b>' +
+      hhmm(at(SWIM + T1 + BIKE)) + '</b>, and finishes around <b>' + hhmm(at(TOTAL)) + '</b>.';
   })();
 
   // ---- race day briefing ----
