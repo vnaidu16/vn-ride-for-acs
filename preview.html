@@ -2658,45 +2658,47 @@
 
     // Each row is a moment on the clock, not a leg. Someone following wants to
     // know when to look, and the leg it closes is the secondary detail.
+    // Every row is a thing that STARTS at the time shown, so a spectator can
+    // read it as when to be somewhere rather than when something finished.
     var MOMENTS = [
-      { c: '#5b6478', abs: TOPEN,                   n: 'Transition opens',
-        w: 'Depot Park. Rack the wheels, pump the tyres, lay the kit out.' },
-      { c: '#ffb020', abs: TSHUT,                   n: 'Transition closes', hard: true,
-        w: 'Hard deadline, half an hour before the gun. Then walk the half mile to Main Beach.' },
-      { c: '#00e57c', at: 0,                        n: 'Age group rolling start',
-        w: 'Main Beach, by the Boardwalk. Self seeded and released in small groups, so his own clock starts when he crosses the mat.' },
-      { c: '#38bdf8', at: SWIM,                     n: 'Out of the water, into T1',
-        w: 'Exits at Cowell\u2019s, then runs the half mile to Depot Park.', leg: 'swim ' + hm(SWIM) },
-      { c: '#6d82ff', at: SWIM + T1,                n: 'Onto the bike',
-        w: 'Out of Depot Park and north onto Highway 1.', leg: 'T1 ' + hm(T1) },
-      { c: '#6d82ff', at: SWIM + T1 + BIKE,         n: 'Off the bike, into T2',
-        w: 'Back into Depot Park after 56 miles.', leg: 'bike ' + hm(BIKE) },
-      { c: '#fc5200', at: SWIM + T1 + BIKE + T2,    n: 'Out on the run',
-        w: 'Two laps through the parks and along West Cliff.', leg: 'T2 ' + hm(T2) },
-      { c: '#00e57c', at: TOTAL,                    n: 'Finish', fin: true,
-        w: 'The last hundred yards are run on the sand at Cowell\u2019s.', leg: 'run ' + hm(RUN) }
+      { c: '#5b6478', abs: TOPEN, n: 'Transition opens', side: 'Depot Park',
+        w: 'He racks the bike, pumps the tyres and lays out both transitions.' },
+      { c: '#ffb020', abs: TSHUT, n: 'Transition closes', hard: true, side: 'Depot Park',
+        w: 'Then everyone walks the half mile to Main Beach. Nothing can be fetched after this.' },
+      { c: '#38bdf8', at: 0, n: 'Swim', dur: SWIM, side: 'Main Beach',
+        w: '1.2 mi clockwise around the wharf. Best watched from the wharf itself or the Boardwalk end.' },
+      { c: '#8fa1ff', at: SWIM, n: 'T1', dur: T1, side: 'Cowell&rsquo;s to Depot Park',
+        w: 'Out of the water at Cowell&rsquo;s, up the sand, then half a mile on pavement to the bike.' },
+      { c: '#6d82ff', at: SWIM + T1, n: 'Bike', dur: BIKE, side: 'leaves Depot Park',
+        w: '56 mi north on Highway 1. The climb is at mile 15, and he is gone for most of the morning.' },
+      { c: '#8fa1ff', at: SWIM + T1 + BIKE, n: 'T2', dur: T2, side: 'Depot Park',
+        w: 'Back into Depot Park, bike racked, shoes and race belt on.' },
+      { c: '#fc5200', at: SWIM + T1 + BIKE + T2, n: 'Run', dur: RUN, side: 'leaves Depot Park',
+        w: '13.1 mi through the parks and along West Cliff. West Cliff is the place to stand.' },
+      { c: '#00e57c', at: TOTAL, n: 'Finish', fin: true, side: 'Cowell&rsquo;s Beach',
+        w: 'The last hundred yards are run on the sand. Be there twenty minutes early.' }
     ];
 
     var now = new Date();
     function when(m) { return m.abs || at(m.at); }
     host.innerHTML = MOMENTS.map(function (m, i) {
-      var cls = now >= when(m) ? ' done' : '';
-      if (!cls && i > 0 && now >= when(MOMENTS[i - 1])) cls = ' now';
-      var side = m.leg ? m.leg + ' &middot; ' + hm(m.at) + ' elapsed'
-                       : (m.abs ? 'before the start' : 'his clock starts');
+      var nxt = MOMENTS[i + 1];
+      var cls = '';
+      if (now >= when(m)) cls = (nxt && now >= when(nxt)) ? ' done' : ' now';
+      var meta = m.dur ? hm(m.dur) + ' &middot; ' + m.side : m.side;
       return '<div class="tmom' + (m.fin ? ' fin' : '') + (m.hard ? ' hard' : '') + cls +
         '" style="--tc:' + m.c + '">' +
         '<span class="tclock">' + hhmm(when(m)) + '</span>' +
         '<span class="tnm">' + m.n + '</span>' +
-        '<span class="tleg">' + side + '</span>' +
+        '<span class="tleg">' + meta + '</span>' +
         '<span class="twhat">' + m.w + '</span></div>';
     }).join('');
 
     document.getElementById('morningkey').innerHTML = [
-      { k: 'Starts', v: hhmm(GUN), s: 'rolling start, Main Beach', cls: 'go' },
-      { k: 'Onto the bike', v: hhmm(at(SWIM + T1)), s: 'after the swim and T1' },
-      { k: 'Onto the run', v: hhmm(at(SWIM + T1 + BIKE + T2)), s: 'after 56 miles' },
-      { k: 'Expected finish', v: hhmm(at(TOTAL)), s: hm(TOTAL) + ' on the clock', cls: 'fin' }
+      { k: 'Swim start', v: hhmm(GUN), s: 'Main Beach', cls: 'go' },
+      { k: 'Bike out', v: hhmm(at(SWIM + T1)), s: 'Depot Park' },
+      { k: 'Run out', v: hhmm(at(SWIM + T1 + BIKE + T2)), s: 'Depot Park' },
+      { k: 'Finish', v: hhmm(at(TOTAL)), s: 'Cowell&rsquo;s Beach, ' + hm(TOTAL) + ' total', cls: 'fin' }
     ].map(function (c) {
       return '<div class="' + (c.cls || '') + '"><div class="kk">' + c.k + '</div>' +
         '<div class="kv">' + c.v + '</div><div class="ks">' + c.s + '</div></div>';
@@ -2714,10 +2716,14 @@
       'note that the 7:00 AM start is a rolling one, self seeded and released in small groups, so his own first ' +
       'stroke could be twenty minutes after the first athlete goes and every time below shifts with it. The ' +
       'tracker follows his chip, not the horn.' +
-      '<br><br><b>Following live:</b> splits appear in the <b>IRONMAN Tracker</b> app. Search ' +
-      '<b>Vaibhav Naidu</b> and turn notifications on, and you get a ping at each of the moments above. If you ' +
-      'only want three: he comes out of the water around <b>' + hhmm(at(SWIM)) + '</b>, off the bike around <b>' +
-      hhmm(at(SWIM + T1 + BIKE)) + '</b>, and finishes around <b>' + hhmm(at(TOTAL)) + '</b>.';
+      '<br><br><b>If you are coming to watch,</b> there are three places to stand. Main Beach or the wharf at <b>' +
+      hhmm(GUN) + '</b> for the swim start, Depot Park around <b>' + hhmm(at(SWIM + T1)) + '</b> to catch him ' +
+      'heading out on the bike, and Cowell&rsquo;s Beach from about <b>' +
+      hhmm(new Date(at(TOTAL).getTime() - 20 * 60000)) + '</b> for the finish. He is out on the road for most ' +
+      'of the middle of the day, so West Cliff Drive after <b>' + hhmm(at(SWIM + T1 + BIKE + T2)) + '</b> is ' +
+      'the place to see him on the run.' +
+      '<br><br><b>Following from home:</b> live splits appear in the <b>IRONMAN Tracker</b> app. Search ' +
+      '<b>Vaibhav Naidu</b> and turn notifications on for a ping at each of these.';
   })();
 
   // ---- the published schedule around the race itself ----
