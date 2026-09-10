@@ -1525,6 +1525,9 @@
 .tmom .tleg { font-size: 11.5px; color: #5b6478; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .tmom .twhat { grid-column: 2 / -1; font-size: 11.5px; color: #6b7489; margin-top: -1px; }
 .tmom.fin .tclock, .tmom.fin .tnm { color: #00e57c; }
+.tmom.hard .tclock { color: #ffb020; }
+.tmom.hard .tnm::after { content: ' \2022 hard deadline'; color: #ffb020; font-size: 10.5px;
+  letter-spacing: .4px; font-weight: 800; }
 .tmom.now::after { content: ''; position: absolute; left: -25px; top: 18px; width: 12px; height: 12px;
   border-radius: 50%; background: var(--tc); opacity: .5; animation: segPulse 2.2s ease-out infinite; }
 @keyframes segPulse { from { transform: scale(1); opacity: .5 } to { transform: scale(2.6); opacity: 0 } }
@@ -1818,9 +1821,15 @@
       <div class="tline" id="morning"></div>
       <div class="hq-note" id="morningnote"></div>
     </div>
+    <div class="hq-card"><h3>The rest of the day <span style="color:#5b6478;font-weight:700">&middot; from the official race schedule</span></h3>
+      <table class="simtab" id="dayschedule"></table>
+      <div class="hq-note" style="margin-top:12px">Taken from the published race day schedule, which IRONMAN
+      marks as subject to change. The finish line is at Cowell&rsquo;s Beach and everything else happens at
+      Depot Park, which is half a mile inland and where the bike goes.</div>
+    </div>
     <div class="hq-card"><h3>The clock <span style="color:#5b6478;font-weight:700">&middot; all timed from your own rolling start</span></h3>
       <div class="cut" id="cutoffs"></div>
-      <div class="hq-note" style="margin-top:12px">The bike cutoff is <b>cumulative</b>: swim plus T1 plus bike. A slow swim eats bike time. Bike Aid Station 3 closes at 1:00 PM regardless.</div>
+      <div class="hq-note" style="margin-top:12px">The bike cutoff is <b>cumulative</b>: swim plus T1 plus bike. A slow swim eats bike time. With a 7:00 AM rolling start his own 5:30 falls around <b>12:30 PM</b>, and the projection has him off the bike at 12:08. <b>Aid station closing times are the one thing to read off the athlete guide rather than this page</b>, since they run on wall clock and not on your own start.</div>
     </div>
     <div class="hq-card"><h3>Pacing</h3><div id="pacing"></div></div>
     <div class="hq-card"><h3>Fuel <span style="color:#5b6478;font-weight:700">&middot; sized for 57 kg, not a 75 kg athlete</span></h3><div id="fuel"></div></div>
@@ -2616,7 +2625,13 @@
   // ---- race morning, written for whoever is following rather than racing ----
   (function () {
     var host = document.getElementById('morning'); if (!host) return;
-    var GUN = new Date('2026-09-13T06:00:00');
+    // 7:00 AM age group rolling start, off the official race day schedule.
+    // Transition closes at 6:30, which is the hard one: half an hour before
+    // the first athlete enters the water, and it is a 0.5 mi walk from there
+    // to the swim start.
+    var GUN = new Date('2026-09-13T07:00:00');
+    var TOPEN = new Date('2026-09-13T05:00:00');
+    var TSHUT = new Date('2026-09-13T06:30:00');
     var T1 = 5 * 60, T2 = 5 * 60;
     function leg(t) { var a = analog(t); return a ? a.sec : projected(t, stats(t)); }
     var SWIM = leg('S'), BIKE = leg('R'), RUN = leg('N');
@@ -2636,8 +2651,12 @@
     // Each row is a moment on the clock, not a leg. Someone following wants to
     // know when to look, and the leg it closes is the secondary detail.
     var MOMENTS = [
-      { c: '#00e57c', at: 0,                        n: 'Swim start',
-        w: 'Main Beach, next to the Boardwalk. Rolling start, so his own clock begins when he crosses the mat.' },
+      { c: '#5b6478', abs: TOPEN,                   n: 'Transition opens',
+        w: 'Depot Park. Rack the wheels, pump the tyres, lay the kit out.' },
+      { c: '#ffb020', abs: TSHUT,                   n: 'Transition closes', hard: true,
+        w: 'Hard deadline, half an hour before the gun. Then walk the half mile to Main Beach.' },
+      { c: '#00e57c', at: 0,                        n: 'Age group rolling start',
+        w: 'Main Beach, by the Boardwalk. Self seeded and released in small groups, so his own clock starts when he crosses the mat.' },
       { c: '#38bdf8', at: SWIM,                     n: 'Out of the water, into T1',
         w: 'Exits at Cowell\u2019s, then runs the half mile to Depot Park.', leg: 'swim ' + hm(SWIM) },
       { c: '#6d82ff', at: SWIM + T1,                n: 'Onto the bike',
@@ -2651,20 +2670,22 @@
     ];
 
     var now = new Date();
+    function when(m) { return m.abs || at(m.at); }
     host.innerHTML = MOMENTS.map(function (m, i) {
-      var nxt = MOMENTS[i + 1];
-      var cls = now >= at(m.at) ? ' done' : '';
-      if (!cls && i > 0 && now >= at(MOMENTS[i - 1].at)) cls = ' now';
-      if (i === 0 && !cls && now >= GUN) cls = ' now';
-      return '<div class="tmom' + (m.fin ? ' fin' : '') + cls + '" style="--tc:' + m.c + '">' +
-        '<span class="tclock">' + hhmm(at(m.at)) + '</span>' +
+      var cls = now >= when(m) ? ' done' : '';
+      if (!cls && i > 0 && now >= when(MOMENTS[i - 1])) cls = ' now';
+      var side = m.leg ? m.leg + ' &middot; ' + hm(m.at) + ' elapsed'
+                       : (m.abs ? 'before the start' : 'his clock starts');
+      return '<div class="tmom' + (m.fin ? ' fin' : '') + (m.hard ? ' hard' : '') + cls +
+        '" style="--tc:' + m.c + '">' +
+        '<span class="tclock">' + hhmm(when(m)) + '</span>' +
         '<span class="tnm">' + m.n + '</span>' +
-        '<span class="tleg">' + (m.leg ? m.leg + ' &middot; ' + hm(m.at) + ' elapsed' : 'the gun') + '</span>' +
+        '<span class="tleg">' + side + '</span>' +
         '<span class="twhat">' + m.w + '</span></div>';
     }).join('');
 
     document.getElementById('morningkey').innerHTML = [
-      { k: 'Starts', v: hhmm(GUN), s: 'Sun Sep 13, Main Beach', cls: 'go' },
+      { k: 'Starts', v: hhmm(GUN), s: 'rolling start, Main Beach', cls: 'go' },
       { k: 'Onto the bike', v: hhmm(at(SWIM + T1)), s: 'after the swim and T1' },
       { k: 'Onto the run', v: hhmm(at(SWIM + T1 + BIKE + T2)), s: 'after 56 miles' },
       { k: 'Expected finish', v: hhmm(at(TOTAL)), s: hm(TOTAL) + ' on the clock', cls: 'fin' }
@@ -2682,11 +2703,34 @@
       '<b>Every time here is a projection, not a promise.</b> They scale the session that most resembles race ' +
       'day, and two of the three are the conservative choice: the ocean swim rather than his quicker pool pace, ' +
       'and the run off the 56 rather than a standalone half. Treat them as a window rather than a schedule, and ' +
-      'note that IRONMAN uses a rolling start, so the gun and his own first stroke can be twenty minutes apart.' +
+      'note that the 7:00 AM start is a rolling one, self seeded and released in small groups, so his own first ' +
+      'stroke could be twenty minutes after the first athlete goes and every time below shifts with it. The ' +
+      'tracker follows his chip, not the horn.' +
       '<br><br><b>Following live:</b> splits appear in the <b>IRONMAN Tracker</b> app. Search ' +
       '<b>Vaibhav Naidu</b> and turn notifications on, and you get a ping at each of the moments above. If you ' +
       'only want three: he comes out of the water around <b>' + hhmm(at(SWIM)) + '</b>, off the bike around <b>' +
       hhmm(at(SWIM + T1 + BIKE)) + '</b>, and finishes around <b>' + hhmm(at(TOTAL)) + '</b>.';
+  })();
+
+  // ---- the published schedule around the race itself ----
+  (function () {
+    var host = document.getElementById('dayschedule'); if (!host) return;
+    var ROWS = [
+      ['5:00 to 6:30 AM', 'Transition area open', 'Depot Park'],
+      ['7:00 AM', 'Age group rolling start', 'Main Beach'],
+      ['8:00 AM to 4:00 PM', 'IRONMAN Village, information tent, lost and found', 'Depot Park'],
+      ['8:00 AM to 4:00 PM', 'Official store and medal engraving', 'Depot Park'],
+      ['10:30 AM to 5:00 PM', 'Athlete post race food', 'Depot Park'],
+      ['11:00 AM to 4:00 PM', 'Finish line open', 'Cowell&rsquo;s Beach'],
+      ['2:00 to 5:00 PM', 'Mandatory bike and gear check out', 'Depot Park'],
+      ['3:00 PM', 'Awards and 2027 World Championship slot allocation', 'Depot Park']
+    ];
+    host.innerHTML = '<thead><tr><th>Time</th><th style="text-align:left">What</th><th>Where</th></tr></thead><tbody>' +
+      ROWS.map(function (r) {
+        return '<tr><td style="text-align:left;white-space:nowrap;color:#f5f6f8;font-weight:800">' + r[0] +
+          '</td><td style="text-align:left;color:#9aa3b8;font-weight:600">' + r[1] +
+          '</td><td style="color:#6b7489;font-weight:600">' + r[2] + '</td></tr>';
+      }).join('') + '</tbody>';
   })();
 
   // ---- race day briefing ----
@@ -2855,7 +2899,7 @@
       { d:'2026-09-12', label:'Sat', sub:'Sep 12',
         html:'<b>20 min spin with 3 x 1 min at 90 rpm, 10 min jog with 4 x 20 sec strides. Check in and rack the bike.</b> <em><b>Get in the ocean.</b> The last two wetsuit swims were both in a pool, so today is the only cold water you will feel before the gun. A few short ones <b>without</b> the wetsuit is enough to take the shock away. <b>If the race suit has arrived, put it on afterwards and swim five easy minutes in it.</b> Shoulders on the recovery, the neck seal, and a gap in the small of your back. That is the whole test. Athletes who make Saturday their first proper ocean swim report it winds them up rather than settling them.<br><b>Racking:</b> the bike goes in transition today and stays overnight, so leave nothing on it you would mind losing and take the computer home. Walk the whole thing twice: swim exit at Cowell\u2019s to your rack, rack to bike out, bike in to your rack, rack to run out. Count racks from the end and pick a landmark that is not a bike, because the bikes all leave.<br><b>Set the bike in the small ring before you walk away.</b> Whatever gear it is racked in is the gear you start on, and mile 15 is the climb.<br>Lay everything out before dinner, eat early, two alarms, early night.</em>' },
       { d:'2026-09-13', label:'Sun', sub:'Sep 13', key:true,
-        html:'<b>Race day.</b> Bob and breathe in the water before the gun. Bike in full sentences and eat every 30 minutes. Run the first mile slower than feels right. <em>Goal one: the cutoff. Goal two: the finish line (ER or PR ;)</em>' }
+        html:'<b>Race day. Transition opens 5:00, closes <u>6:30</u>, rolling start 7:00.</b> Up at 4:00, eat by 4:30, in transition by 5:15. The 6:30 close is the hard one and it is half an hour before the start, with a half mile walk to Main Beach after it.<br> Bob and breathe in the water before the gun. Bike in full sentences and eat every 30 minutes. Run the first mile slower than feels right. <em>Goal one: the cutoff. Goal two: the finish line (ER or PR ;)</em>' }
     ];
     var todayStr = new Date(now.getTime() - now.getTimezoneOffset()*60000).toISOString().slice(0,10);
     // Once the block is behind us the day by day plan is noise, so it retires
