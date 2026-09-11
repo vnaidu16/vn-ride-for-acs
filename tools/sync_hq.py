@@ -117,12 +117,18 @@ def main():
 
     if "--add" in sys.argv:
         payload = json.loads(sys.argv[sys.argv.index("--add") + 1])
-        have = {a["id"] for a in acts}
+        # A hand logged session has no Strava id, so identity falls back to the
+        # date and name. Keying on the id alone made every manual entry after
+        # the first collide on the empty string and silently vanish.
+        def key(a):
+            return a["id"] or ("manual", a["d"], a["n"])
+        have = {key(a) for a in acts}
         added = 0
         for a in payload:
-            if a["id"] in have:
+            if key(a) in have:
                 print("  already present, skipping: %s %s" % (a["d"], a["n"]))
                 continue
+            have.add(key(a))
             acts.append(a)
             added += 1
             print("  added: %s  %-28s %s" % (a["d"], a["n"], a.get("dist") or a["time"]))
