@@ -1511,6 +1511,16 @@
 .simleg .st { font-size: 12px; color: #9aa3b8; margin-top: 3px; font-variant-numeric: tabular-nums; }
 .simtot { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; }
 .simtot div { flex: 1; min-width: 108px; background: #10141f; border: 1px solid #1e2536; border-radius: 10px; padding: 10px 12px; }
+.applinks { display: flex; flex-wrap: wrap; gap: 10px; }
+.applink { display: inline-flex; align-items: center; gap: 11px; text-decoration: none;
+  background: #10141f; border: 1px solid #1e2536; border-radius: 12px; padding: 11px 18px 11px 15px;
+  transition: all .2s; flex: 1; min-width: 168px; }
+.applink:hover { border-color: #2b3550; background: #141a28; transform: translateY(-1px); }
+.applink svg { width: 22px; height: 22px; fill: #8fa1ff; flex: none; }
+.applink span { display: flex; flex-direction: column; line-height: 1.3; }
+.applink b { font-size: 13.5px; color: #f5f6f8; font-weight: 800; }
+.applink span { font-size: 11px; color: #6b7489; font-weight: 600; }
+
 .tkey { display: grid; grid-template-columns: repeat(auto-fit,minmax(128px,1fr)); gap: 8px; margin: 2px 0 18px; }
 .tkey div { background: #10141f; border: 1px solid #1e2536; border-radius: 12px; padding: 11px 14px; }
 .tkey .kk { font-size: 9px; letter-spacing: 1.4px; text-transform: uppercase; color: #5b6478; font-weight: 800; }
@@ -1833,6 +1843,20 @@
       <div class="tline" id="morning"></div>
       <div class="hq-note" id="morningnote"></div>
     </div>
+    <div class="hq-card"><h3>Follow him live <span style="color:#5b6478;font-weight:700">&middot; free, no account needed</span></h3>
+      <div class="hq-note" style="margin-bottom:14px">Official IRONMAN tracking. Install it, search
+      <b>Vaibhav Naidu</b>, add him as a favourite and turn notifications on. You get a push as he comes out of
+      the water, off the bike and across the line, plus live splits and his position on the course map.
+      Do it before Saturday night, not on race morning.</div>
+      <div class="applinks">
+        <a class="applink" href="https://apps.apple.com/us/app/ironman-tracker/id1183983404" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.05 12.54c.02-2.3 1.88-3.4 1.96-3.45-1.07-1.56-2.73-1.78-3.32-1.8-1.41-.14-2.76.83-3.48.83-.72 0-1.83-.81-3.01-.79-1.55.02-2.98.9-3.77 2.28-1.61 2.79-.41 6.92 1.15 9.18.76 1.11 1.67 2.35 2.86 2.31 1.15-.05 1.58-.74 2.97-.74 1.39 0 1.78.74 2.99.72 1.23-.02 2.01-1.13 2.76-2.24.87-1.28 1.23-2.52 1.25-2.59-.03-.01-2.39-.92-2.41-3.64zM14.77 5.5c.63-.77 1.06-1.83.94-2.9-.91.04-2.02.61-2.67 1.37-.58.68-1.09 1.77-.95 2.81 1.02.08 2.06-.52 2.68-1.28z"/></svg>
+          <span><b>iPhone</b>App Store</span></a>
+        <a class="applink" href="https://play.google.com/store/apps/details?id=me.rtrt.app.irma" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.6 2.4c-.3.3-.5.8-.5 1.4v16.4c0 .6.2 1.1.5 1.4l.1.1 9.2-9.2v-.2L3.7 2.3l-.1.1zm12.3 6.1L13 11.4v.2l2.9 2.9.1-.1 3.5-2c1-.6 1-1.5 0-2.1l-3.5-2-.1.2zM13 11.4L3.7 20.7c.3.4.9.4 1.5.1l10.7-6.1L13 11.4zm0-.8l2.9-2.9L5.2 1.6c-.6-.3-1.2-.3-1.5.1L13 10.6z"/></svg>
+          <span><b>Android</b>Google Play</span></a>
+      </div>
+    </div>
     <div class="hq-card"><h3>The rest of the day <span style="color:#5b6478;font-weight:700">&middot; from the official race schedule</span></h3>
       <table class="simtab" id="dayschedule"></table>
       <div class="hq-note" style="margin-top:12px">Taken from the published race day schedule, which IRONMAN
@@ -1841,7 +1865,11 @@
     </div>
     <div class="hq-card"><h3>The clock <span style="color:#5b6478;font-weight:700">&middot; all timed from your own rolling start</span></h3>
       <div class="cut" id="cutoffs"></div>
-      <div class="hq-note" style="margin-top:12px">The bike cutoff is <b>cumulative</b>: swim plus T1 plus bike. A slow swim eats bike time. With a 7:00 AM rolling start his own 5:30 falls around <b>12:30 PM</b>, and the projection has him off the bike at 12:08. <b>Aid station closing times are the one thing to read off the athlete guide rather than this page</b>, since they run on wall clock and not on your own start.</div>
+      <div class="hq-note" style="margin-top:12px"><b>Every cutoff runs from his own start, not from the horn.</b>
+      The clock times above assume he is released at 7:00. A rolling start can put him in the water up to twenty
+      minutes later, and if it does, every deadline here moves back by the same amount. <b>Aid station closing
+      times are the exception and the one thing to read off the athlete guide instead</b>, because those run on
+      wall clock regardless of when anybody started.</div>
     </div>
     <div class="hq-card"><h3>Pacing</h3><div id="pacing"></div></div>
     <div class="hq-card"><h3>Fuel <span style="color:#5b6478;font-weight:700">&middot; sized for 57 kg, not a 75 kg athlete</span></h3><div id="fuel"></div></div>
@@ -2810,8 +2838,8 @@
       hhmm(new Date(at(TOTAL).getTime() - 20 * 60000)) + '</b> for the finish. He is out on the road for most ' +
       'of the middle of the day, so West Cliff Drive after <b>' + hhmm(at(SWIM + T1 + BIKE + T2)) + '</b> is ' +
       'the place to see him on the run.' +
-      '<br><br><b>Following from home:</b> live splits appear in the <b>IRONMAN Tracker</b> app. Search ' +
-      '<b>Vaibhav Naidu</b> and turn notifications on for a ping at each of these.';
+      '<br><br><b>Following from home:</b> the IRONMAN Tracker app pushes each of these to your phone as it ' +
+      'happens. Links are in the card below.';
   })();
 
   // ---- the published schedule around the race itself ----
@@ -2838,14 +2866,43 @@
   // ---- race day briefing ----
   (function () {
     var cut = document.getElementById('cutoffs'); if (!cut) return;
-    cut.innerHTML = [
-      ['Swim', '1:10', '1.2 mi. Your open water sim was 1:10:54 with stops and kayak faff. Pool pace says 56 min.'],
-      ['Bike', '5:30', 'Cumulative: swim + T1 + bike. This is the one to respect.'],
-      ['Finish', '8:30', 'Everything. Athletes have come in at 8:26 and counted it a win.'],
-      ['At T2', 'Do the maths', 'Note the clock leaving T2. Subtract from 8:30. Divide by 13.1. That is your run budget.']
-    ].map(function (c) {
-      return '<div><div class="ck">' + c[0] + '</div><div class="cv">' + c[1] + '</div><div class="cs">' + c[2] + '</div></div>';
-    }).join('');
+    // Cutoffs run from his own rolling start, so the clock times below assume a
+    // 7:00 start. If he is released later, every deadline moves with him.
+    var G = new Date('2026-09-13T07:00:00');
+    function w(sec) {
+      var d = new Date(G.getTime() + sec * 1000), h = d.getHours(), m = d.getMinutes();
+      return ((h % 12) || 12) + ':' + ('0' + m).slice(-2) + ' ' + (h >= 12 ? 'PM' : 'AM');
+    }
+    function gap(sec) {
+      var d = Math.round(Math.abs(sec)), h = Math.floor(d / 3600), m = Math.floor(d % 3600 / 60);
+      // A margin under a minute is the whole story on the swim, so never round
+      // it away to a flat 0m.
+      if (d < 60) return d + 's';
+      return (h ? h + 'h ' : '') + m + 'm';
+    }
+    function P(t) { var a = analog(t); return a ? a.sec : projected(t, stats(t)); }
+    var SW = P('S'), BK = P('R'), RN = P('N'), TR = 300;
+
+    var ROWS = [
+      { k: 'Swim', lim: 70 * 60, at: SW,
+        s: 'Out of the water by then. The rehearsal in the bay came in at 1:10:54, but 19:10 of that was spent stationary.' },
+      { k: 'Bike', lim: 330 * 60, at: SW + TR + BK,
+        s: 'Cumulative, so this is swim plus T1 plus bike. A slow swim eats bike time. The one to respect.' },
+      { k: 'Finish', lim: 510 * 60, at: SW + TR + BK + TR + RN,
+        s: 'Everything. Athletes have come in at 8:26 and counted it a win.' }
+    ];
+    cut.innerHTML = ROWS.map(function (c) {
+      var spare = c.lim - c.at, ok = spare >= 0;
+      return '<div class="' + (ok ? '' : 'over') + '">' +
+        '<div class="ck">' + c.k + ' cutoff &middot; ' + gap(c.lim) + '</div>' +
+        '<div class="cv">' + w(c.lim) + '</div>' +
+        '<div class="cn"><b style="color:' + (ok ? '#7ef0ba' : '#ffb020') + '">' +
+        (ok ? gap(spare) + ' spare' : gap(spare) + ' over') + '</b> on the projection, which has him at ' +
+        w(c.at) + '.<br>' + c.s + '</div></div>';
+    }).join('') +
+      '<div><div class="ck">At T2, do the maths</div><div class="cv">' + w(510 * 60) + '</div>' +
+      '<div class="cn">Note the clock leaving T2, subtract it from 8:30, divide by 13.1. That is the run budget, ' +
+      'and it is the only sum worth doing on the day.</div></div>';
 
     document.getElementById('pacing').innerHTML = [
       { c:'#38bdf8', h:'Swim', b:'<b>RPE 5 out of 10 for the first 400m.</b> Start wide and toward the back. Before the gun, get in and bob: face in the water, exhale slowly, 1 to 2 minutes. That pre-triggers the dive reflex so it does not ambush you at 100m. <em>If panic comes anyway, roll onto your back and breathe. You may hold a kayak without advancing. It costs 60 seconds against a 70 minute budget.</em>' },
