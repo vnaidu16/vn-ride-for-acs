@@ -450,7 +450,38 @@
   .stat.reveal, .stat.reveal.in { transition-property: opacity, transform, border-color, box-shadow; }
 
   /* scroll progress bar */
-  #scrollbar { position: fixed; top: 0; left: 0; height: 3px; width: 0%; background: linear-gradient(90deg, #2746F8, #8fa1ff); box-shadow: 0 0 12px rgba(77,102,255,.9); z-index: 100; border-radius: 0 3px 3px 0; }
+  /* Race week banner. Fixed rather than in flow so it survives the scroll, and
+     it retires itself the day after the race. The body picks up its height as
+     padding, which is what keeps the hero and the burger clear of it. */
+  :root { --rb: 0px; }
+  body.rbon { padding-top: var(--rb); }
+  .rbanner { display: none; position: fixed; top: 0; left: 0; right: 0; height: var(--rb);
+    z-index: 130; align-items: center; overflow: hidden; text-decoration: none;
+    background: linear-gradient(90deg, #101a3d, #1a2a6b 45%, #101a3d);
+    border-bottom: 1px solid rgba(143,161,255,.28); }
+  body.rbon .rbanner { display: flex; }
+  .rbanner::after { content: ''; position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(90deg, #0b0e15, transparent 9%, transparent 91%, #0b0e15); }
+  .rtrack { display: flex; flex: none; white-space: nowrap; will-change: transform;
+    animation: rbMove 34s linear infinite; }
+  .rbanner:hover .rtrack, .rbanner:focus-visible .rtrack { animation-play-state: paused; }
+  .rbanner:focus-visible { outline: 2px solid #8fa1ff; outline-offset: -3px; }
+  @keyframes rbMove { from { transform: translate3d(0,0,0); } to { transform: translate3d(-50%,0,0); } }
+  .rseg { display: inline-flex; align-items: center; gap: 13px; padding-right: 13px;
+    font-size: 11.5px; font-weight: 800; letter-spacing: 1.7px; text-transform: uppercase;
+    color: #c3cbdc; font-variant-numeric: tabular-nums; }
+  .rseg b { color: #fff; }
+  .rseg i { font-style: normal; color: #8fa1ff; }
+  .rseg u { text-decoration: none; color: #00e57c; }
+  .rseg s { text-decoration: none; color: #4a5578; }
+  @media (max-width: 640px) { .rseg { font-size: 10.5px; letter-spacing: 1.2px; gap: 10px; } }
+  @media (prefers-reduced-motion: reduce) {
+    .rtrack { animation: none; transform: none; }
+    .rbanner { justify-content: center; }
+    .rtrack .rseg:nth-child(n+2) { display: none; }
+  }
+
+  #scrollbar { position: fixed; top: var(--rb, 0px); left: 0; height: 3px; width: 0%; background: linear-gradient(90deg, #2746F8, #8fa1ff); box-shadow: 0 0 12px rgba(77,102,255,.9); z-index: 100; border-radius: 0 3px 3px 0; }
 
   /* ambient drifting glow orb */
   .orb { position: absolute; width: 420px; height: 420px; border-radius: 50%; pointer-events: none; z-index: 0;
@@ -552,6 +583,9 @@
 </style>
 </head>
 <body>
+<a class="rbanner" id="rbanner" href="#race-day" aria-label="Race day details and how to follow live">
+  <span class="rtrack" id="rtrack"></span>
+</a>
 <div id="scrollbar"></div>
 <div class="flyer" id="flyer">
   <div class="orb" style="top: 560px; left: -120px;"></div>
@@ -852,6 +886,49 @@
       (togo > 0 ? 'Fuel the final ' + togo : 'Three hundred miles, done'));
     set('milesSoFar', Math.round(RIDE.done));
     set('footerRange', 'Ride data verified via Strava + Stages sensors &middot; ' + RIDE.through);
+  })();
+
+  // ---- race week banner ----
+  // Lives in the first script so it is painted with the hero rather than after
+  // the Engine Room blob parses. It retires itself the day after the race.
+  (function () {
+    var el = document.getElementById('rbanner'), track = document.getElementById('rtrack');
+    if (!el || !track) return;
+    var RACE = new Date('2026-09-13T07:00:00');
+    var now = new Date();
+    var dead = new Date('2026-09-14T12:00:00');
+    if (now > dead) return;                       // retires on its own
+
+    var days = Math.ceil((new Date('2026-09-13T00:00:00') - new Date(
+      now.getFullYear(), now.getMonth(), now.getDate())) / 86400000);
+    var lead = days > 1 ? days + ' days out'
+             : days === 1 ? 'tomorrow'
+             : days === 0 ? 'today' : 'race day';
+
+    var bits = [
+      '<b>IRONMAN 70.3 Santa Cruz</b>',
+      '<i>&middot;</i>', 'Sun Sep 13',
+      '<i>&middot;</i>', '<u>' + lead + '</u>',
+      '<i>&middot;</i>', 'Swim <b>7:00 AM</b>',
+      '<i>&middot;</i>', 'Bike <b>8:15 AM</b>',
+      '<i>&middot;</i>', 'Run <b>12:13 PM</b>',
+      '<i>&middot;</i>', 'Finish <b>2:41 PM</b>',
+      '<i>&middot;</i>', '<u>Times and how to follow him live</u>',
+      '<s>&rarr;</s>'
+    ].join(' ');
+    var seg = '<span class="rseg">' + bits + '</span>';
+    // Two identical halves, so translating by half the track loops seamlessly.
+    // Each half repeats enough times to outrun a wide viewport.
+    var half = new Array(3).join(seg) + seg;
+    track.innerHTML = half + half;
+
+    document.documentElement.style.setProperty('--rb',
+      (window.matchMedia('(max-width: 640px)').matches ? 34 : 40) + 'px');
+    document.body.classList.add('rbon');
+    window.addEventListener('resize', function () {
+      document.documentElement.style.setProperty('--rb',
+        (window.matchMedia('(max-width: 640px)').matches ? 34 : 40) + 'px');
+    });
   })();
 
   // Keep the brand row clear of the burger whatever the button ends up measuring.
@@ -1265,7 +1342,7 @@
    three disciplines, in the same colours the Engine Room charts use. */
 /* Deliberately recessive. The page is the ACS fundraiser until Aug 31;
    the training hub behind this is V's, not the donor's. */
-#burger { position: fixed; top: 16px; left: 16px; z-index: 120; height: 34px; padding: 0 9px; border-radius: 10px;
+#burger { position: fixed; top: calc(var(--rb, 0px) + 16px); left: 16px; z-index: 120; height: 34px; padding: 0 9px; border-radius: 10px;
   background: rgba(13,16,23,.5); border: 1px solid rgba(90,102,128,.3); cursor: pointer; display: flex; flex-direction: row; align-items: center; gap: 8px;
   backdrop-filter: blur(6px); transition: border-color .2s, background .2s, opacity .25s; font-family: inherit; opacity: .5; }
 #burger:hover, #burger:focus-visible { opacity: 1; border-color: #6d82ff; background: rgba(18,23,34,.92); }
@@ -1282,7 +1359,7 @@
 #burger.open .bars span:nth-child(1) { transform: translateY(5.5px) rotate(45deg); }
 #burger.open .bars span:nth-child(2) { opacity: 0; }
 #burger.open .bars span:nth-child(3) { transform: translateY(-5.5px) rotate(-45deg); }
-@media (max-width: 640px) { #burger { top: 12px; left: 12px; height: 30px; padding: 0 7px; gap: 6px; } #burger .mdot { width: 15px; height: 13px; } }
+@media (max-width: 640px) { #burger { top: calc(var(--rb, 0px) + 12px); left: 12px; height: 30px; padding: 0 7px; gap: 6px; } #burger .mdot { width: 15px; height: 13px; } }
 /* One shot intro when the panel opens. The blur is on this small block
    only, never a full surface, and the node stops animating after ~1s. */
 .hqintro { position: fixed; inset: 0; z-index: 6; display: none; align-items: center; justify-content: center;
